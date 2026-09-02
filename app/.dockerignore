@@ -1,0 +1,44 @@
+# Ce que l'image ne doit jamais emporter.
+#
+# Sans ce fichier, le « COPY . . » du Dockerfile ramasse tout le dossier de
+# travail, et deux choses graves s'ensuivent.
+#
+# D'abord le « .env » local part dans l'image. Laravel le lit en priorité sur
+# les variables d'environnement du service : le conteneur déployé chercherait
+# donc la base sur 127.0.0.1 avec le mot de passe du poste de développement, et
+# « config:cache » figerait ces valeurs. L'application ne démarrerait pas — et
+# le mot de passe aurait quand même voyagé dans l'image.
+#
+# Ensuite le « vendor » local, soixante-seize mégaoctets installés sous Windows,
+# écrase celui que Composer vient d'installer proprement à l'étage précédent,
+# dépendances de développement comprises.
+
+# ── Secrets ──────────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Dépendances : reconstruites dans l'image ─────────────────────────────────
+vendor/
+node_modules/
+
+# ── Artefacts d'exécution du poste de développement ──────────────────────────
+storage/logs/*.log
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+storage/app/public/*
+bootstrap/cache/*.php
+.phpunit.result.cache
+.phpunit.cache/
+
+# ── Ce qui ne sert pas à l'exécution ─────────────────────────────────────────
+.git/
+.gitignore
+.github/
+.claude/
+tests/
+phpunit.xml
+docker-compose.yml
+README.md

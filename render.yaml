@@ -1,0 +1,148 @@
+# Infrastructure de FamFer, décrite avec le code.
+#
+# Render lit ce fichier, crée les ressources et les relie. Rien n'est réglé à la
+# main dans une interface : ce qui n'est pas écrit ici n'existe pas, et un
+# déploiement se rejoue à l'identique.
+
+databases:
+  - name: famfer-db
+    databaseName: famfer
+    user: famfer
+    plan: free
+    region: frankfurt
+
+services:
+  - type: web
+    name: famfer
+    runtime: docker
+    plan: free
+    region: frankfurt
+    # Le dépôt porte l'application dans « app/ » et la conception à côté :
+    # le contexte de construction se limite donc à « app », sinon l'image
+    # emporterait les documents du mémoire.
+    dockerfilePath: ./app/Dockerfile
+    dockerContext: ./app
+    # « /up » est la sonde de Laravel : elle confirme que l'application démarre
+    # sans interroger la base. « / » est la page de recherche, qui lit le
+    # catalogue : une base momentanément lente y ferait déclarer le service en
+    # panne, et l'hébergeur le redémarrerait au pire moment.
+    healthCheckPath: /up
+
+    envVars:
+      - key: APP_NAME
+        value: FamFer
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: LOG_CHANNEL
+        value: stderr
+
+      # La clé de chiffrement ne vient jamais du dépôt. La régénérer rendrait
+      # illisible tout ce qu'elle protège : on la pose une fois, à la main, dans
+      # la configuration du service.
+      - key: APP_KEY
+        sync: false
+
+      - key: APP_URL
+        sync: false
+
+      # Connexion à la base créée ci-dessus. Render remplit ces valeurs seul.
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: famfer-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: famfer-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: famfer-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: famfer-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: famfer-db
+          property: password
+
+      # Les tâches longues et les envois passent par la base plutôt que par la
+      # mémoire : un conteneur qui redémarre ne doit pas perdre ce qui attendait.
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+
+      # Identifiants de l'opérateur de paiement. En environnement d'étude, ce
+      # sont ceux du bac à sable ; ils ne figurent jamais dans le dépôt.
+      - key: PAIEMENT_OPERATEUR
+        value: wave
+      - key: PAIEMENT_CLE_API
+        sync: false
+      - key: PAIEMENT_SECRET_RAPPEL
+        sync: false
+
+      # Le semis de démonstration reste éteint en production : il ne s'allume
+      # que le temps d'une présentation, puis on le remet à false.
+      - key: DONNEES_DEMO
+        value: "false"
+
+  # Les trois délais du cycle de commande — 15 minutes pour payer, 2 heures pour
+  # que le vendeur accepte, 72 heures pour confirmer la réception — s'exécutent
+  # même si personne ne visite le site. Sans cela, un panier abandonné bloquerait
+  # le stock d'un vendeur indéfiniment.
+  - type: cron
+    name: famfer-delais
+    runtime: docker
+    plan: free
+    region: frankfurt
+    # Le dépôt porte l'application dans « app/ » et la conception à côté :
+    # le contexte de construction se limite donc à « app », sinon l'image
+    # emporterait les documents du mémoire.
+    dockerfilePath: ./app/Dockerfile
+    dockerContext: ./app
+    schedule: "*/5 * * * *"
+    dockerCommand: php artisan famfer:delais
+
+    # Ces variables étaient déclarées « fromGroup: famfer-partage », un groupe
+    # qui n'existe nulle part : la tâche serait partie sans identifiants de base
+    # et aurait échoué à chaque exécution. Elles pointent maintenant sur la même
+    # base que le service web, comme lui.
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: APP_KEY
+        sync: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: famfer-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: famfer-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: famfer-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: famfer-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: famfer-db
+          property: password

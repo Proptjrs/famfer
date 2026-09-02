@@ -1,0 +1,6 @@
+# La racine du dépôt. Les règles propres à l'application vivent dans
+# « app/.gitignore » : Git applique le fichier d'un sous-dossier relativement à
+# ce sous-dossier, si bien que le « /vendor » de Laravel continue de désigner
+# « app/vendor » et rien d'autre.
+.DS_Store
+Thumbs.db

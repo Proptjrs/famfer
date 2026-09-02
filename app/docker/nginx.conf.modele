@@ -1,0 +1,29 @@
+# Le port n'est pas écrit en dur : l'hébergeur impose le sien par la variable
+# PORT, et un serveur qui écoute ailleurs est déclaré en panne puis redémarré
+# en boucle. L'entrypoint substitue la valeur au démarrage — d'où le « .modele ».
+server {
+    listen ${PORT};
+    root /var/www/public;
+    index index.php;
+
+    # Une adresse inconnue passe à Laravel, qui décide : c'est lui qui connaît
+    # les routes, pas le serveur web.
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    # Les fichiers cachés ne sont jamais servis : « .env » contient la clé de
+    # chiffrement et les identifiants de la base.
+    location ~ /\. {
+        deny all;
+    }
+
+    client_max_body_size 12M;
+}

@@ -1,0 +1,59 @@
+# Pour développer, et pour vérifier que l'image se construit avant de la pousser.
+# La commande unique : docker compose up -d --build
+services:
+  app:
+    build: .
+    # 8090 côté poste, 8080 dans le conteneur : sous Windows, 8080 figure dans
+    # les plages d'exclusion de « netsh » et le démon Docker ne peut pas s'y
+    # attacher — l'erreur parle de permissions, pas de port occupé, et aucun
+    # processus fautif n'apparaît. Le port interne, lui, reste celui du
+    # Dockerfile ; en ligne, l'hébergeur impose le sien par PORT.
+    ports:
+      - "8090:8080"
+    environment:
+      # Clé de DÉVELOPPEMENT, jetable, valable pour ce compose et rien d'autre.
+      # Celle de production ne figure jamais dans un fichier versionné : elle se
+      # pose à la main dans la configuration du service, et la régénérer rendrait
+      # illisible tout ce qu'elle protège.
+      APP_KEY: base64:ADxiyzlOnqUwL5YCQ0SpAMH0sZvQiusmRDDL1GrwlVk=
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: pgsql
+      DB_HOST: base
+      DB_PORT: 5432
+      DB_DATABASE: famfer
+      DB_USERNAME: famfer
+      DB_PASSWORD: famfer
+      QUEUE_CONNECTION: database
+      # Secret de développement pour signer les rappels de paiement.
+      # En production il vient de la configuration du service, jamais d'un fichier.
+      PAIEMENT_SECRET_RAPPEL: secret-de-developpement-famfer
+      # Les quincailleries de démonstration, pour avoir quelque chose à voir.
+      DONNEES_DEMO: "true"
+    depends_on:
+      base:
+        condition: service_healthy
+
+  base:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: famfer
+      POSTGRES_USER: famfer
+      POSTGRES_PASSWORD: famfer
+    # PostgreSQL 18 a déplacé son point de montage : le volume se pose sur
+    # « /var/lib/postgresql » et non plus sur son sous-dossier « data ».
+    # L'image refuse de démarrer autrement — elle veut pouvoir ranger les
+    # données dans un sous-dossier par version, pour que « pg_upgrade » n'ait
+    # pas à franchir une limite de montage.
+    volumes:
+      - donnees:/var/lib/postgresql
+    # Sans ce contrôle, l'application démarre avant que la base n'accepte les
+    # connexions, et la première migration échoue.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U famfer -d famfer"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  donnees:

@@ -1,0 +1,10 @@
+# Les scripts du conteneur gardent des fins de ligne Unix, quel que soit le
+# poste qui les édite : un shebang suivi d'un retour chariot rend le script
+# introuvable pour le noyau Linux, avec un message qui désigne l'interpréteur.
+*.sh text eol=lf
+app/docker/entrypoint.sh text eol=lf
+app/Dockerfile text eol=lf
+*.conf text eol=lf
+*.modele text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
