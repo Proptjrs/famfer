@@ -174,10 +174,8 @@ class CompteTest extends TestCase
         $this->seed(CatalogueSeeder::class);
         $this->seed(VendeursSeeder::class);
 
-        $admin = User::create([
-            'name' => 'Administration', 'email' => 'admin@famfer.sn',
-            'password' => 'password', 'est_admin' => true,
-        ]);
+        // L'administrateur est déjà semé.
+        $admin = User::firstWhere('est_admin', true);
 
         $enAttente = Vendeur::where('statut', 'en_attente')->orderBy('id')->first();
         $this->assertNotNull($enAttente, 'Le seeder doit contenir une demande en attente.');

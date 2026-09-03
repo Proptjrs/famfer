@@ -46,6 +46,13 @@ h2{font-size:1.5rem;font-weight:700;text-transform:uppercase;margin-bottom:16px}
 .tete nav{display:flex;gap:20px;margin-left:auto;align-items:center;flex-wrap:wrap}
 .tete nav a{color:#AEB8C2;font-size:.92rem;font-weight:500}
 .tete nav a:hover{color:#fff;text-decoration:none}
+/* L'espace professionnel se distingue des liens d'achat : un filet à gauche,
+   et la couleur de la marque. Sans cela, « Mon commerce » se lit comme une
+   rubrique de plus au milieu du panier. */
+.espace-pro{color:var(--forge-vif) !important;font-weight:600 !important;
+            padding-left:16px;border-left:1px solid rgba(255,255,255,.18)}
+.espace-pro:hover{color:#fff !important}
+
 .pastille{background:var(--forge);color:#fff;border-radius:20px;padding:1px 8px;
           font-size:.76rem;font-weight:700;margin-left:2px}
 
@@ -190,18 +197,37 @@ tr:last-child td{border-bottom:0}
 
     <nav>
       @auth
-        <a href="{{ route('compte') }}">Mon compte</a>
-        @if(auth()->user()->vendeur)<a href="{{ route('vendeur.tableau') }}">Mon commerce</a>
-        @else<a href="{{ route('vendeur.demande') }}">Vendre sur FamFer</a>@endif
-        @if(auth()->user()->est_admin)<a href="{{ route('admin.tableau') }}">Administration</a>@endif
+        {{-- Ce qu'on fait en tant qu'acheteur. --}}
         @if(auth()->user()->acheteur)
           <a href="{{ route('panier.voir') }}">Panier @if($n = count(session('panier', [])))<span class="pastille">{{ $n }}</span>@endif</a>
           <a href="{{ route('acheteur.commandes') }}">Mes commandes</a>
         @endif
+        <a href="{{ route('compte') }}">Mon compte</a>
+
+        {{-- Puis l'espace professionnel, détaché du reste : ce n'est pas le
+             même métier, et le mélanger au panier fait chercher son commerce
+             au milieu de ses courses. --}}
+        @if(auth()->user()->vendeur)
+          <a href="{{ route('vendeur.tableau') }}" class="espace-pro">
+            Mon commerce
+            @if(auth()->user()->vendeur->statut === 'en_attente')
+              <span class="pastille" style="background:var(--ambre)">en attente</span>
+            @endif
+          </a>
+        @endif
+        @if(auth()->user()->est_admin)
+          <a href="{{ route('admin.tableau') }}" class="espace-pro">Administration</a>
+        @endif
+
         <form method="POST" action="{{ route('deconnexion') }}" style="display:inline">
           @csrf <button class="btn btn-sm btn-clair">Sortir</button>
         </form>
       @else
+        {{-- La porte des vendeurs doit se voir AVANT d'avoir un compte : une
+             quincaillerie qui arrive ici ne sait pas que la plateforme
+             l'accepte. En cliquant, elle passe par la connexion et « intended »
+             la ramène au formulaire de demande. --}}
+        <a href="{{ route('vendeur.demande') }}" class="espace-pro">Vendre sur FamFer</a>
         <a href="{{ route('connexion') }}">Se connecter</a>
         <a href="{{ route('inscription') }}" class="btn btn-sm">Créer un compte</a>
       @endauth

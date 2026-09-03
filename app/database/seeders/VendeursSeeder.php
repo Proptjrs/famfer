@@ -60,6 +60,13 @@ class VendeursSeeder extends Seeder
             return;
         }
 
+        // Un administrateur, sans quoi l'espace d'arbitrage est inatteignable :
+        // depuis qu'il est fermé au rôle, plus personne ne pouvait y entrer.
+        User::firstOrCreate(
+            ['email' => 'admin@famfer.sn'],
+            ['name' => 'Administration FamFer', 'password' => 'password', 'est_admin' => true]
+        );
+
         $conversion = app(ConversionUnites::class);
         $stock = app(StockService::class);
         $articles = Article::with('unitesVente')->orderBy('id')->get();

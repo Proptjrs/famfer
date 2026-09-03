@@ -138,10 +138,9 @@ class ParcoursWebTest extends TestCase
 
     public function test_ladministration_affiche_les_invariants(): void
     {
-        $admin = User::create([
-            'name' => 'Arbitrage', 'email' => 'admin@famfer.sn',
-            'password' => 'password', 'est_admin' => true,
-        ]);
+        // L'administrateur vient du semis : le recréer heurterait la contrainte
+        // d'unicité sur l'adresse.
+        $admin = User::firstWhere('est_admin', true);
 
         $this->actingAs($admin)->get(route('admin.tableau'))
             ->assertOk()

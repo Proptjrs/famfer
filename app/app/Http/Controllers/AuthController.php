@@ -32,7 +32,7 @@ class AuthController extends Controller
 
         $r->session()->regenerate();
 
-        return redirect()->intended(route('accueil'));
+        return redirect()->intended($this->accueilDuRole($r->user()));
     }
 
     public function formulaireInscription()
@@ -65,7 +65,39 @@ class AuthController extends Controller
         Auth::login($u);
         $r->session()->regenerate();
 
-        return redirect()->route('accueil')->with('ok', 'Bienvenue ' . $u->name . '.');
+        // « intended » aussi à l'inscription : une quincaillerie qui a cliqué
+        // sur « Vendre sur FamFer » sans avoir de compte passe par ici, et
+        // doit ressortir sur le formulaire de demande — pas sur le catalogue,
+        // où elle aurait à retrouver la porte par laquelle elle était entrée.
+        return redirect()->intended($this->accueilDuRole($u))
+            ->with('ok', 'Bienvenue ' . $u->name . '.');
+    }
+
+    /**
+     * La page d'arrivée dépend de ce qu'on est venu faire.
+     *
+     * Tout le monde atterrissait sur le catalogue. Un quincaillier qui se
+     * connecte à sept heures du matin vient traiter ses commandes, pas acheter
+     * du fer : lui présenter la vitrine lui fait chercher son propre commerce
+     * dans le menu. L'administration, elle, ne vient jamais pour acheter.
+     *
+     * « intended » garde la priorité : quelqu'un qui a cliqué sur « Vendre sur
+     * FamFer » avant de se connecter doit arriver sur le formulaire de demande,
+     * pas ici.
+     */
+    private function accueilDuRole(User $utilisateur): string
+    {
+        if ($utilisateur->est_admin) {
+            return route('admin.tableau');
+        }
+
+        // Y compris en attente de vérification : c'est là qu'il prépare ses
+        // offres, et là qu'on lui dit où en est son dossier.
+        if ($utilisateur->vendeur) {
+            return route('vendeur.tableau');
+        }
+
+        return route('accueil');
     }
 
     public function deconnecter(Request $r)

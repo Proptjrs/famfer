@@ -45,10 +45,9 @@ class AdministrationFermeeTest extends TestCase
         $this->seed(CatalogueSeeder::class);
         $this->seed(VendeursSeeder::class);
 
-        $this->admin = User::create([
-            'name' => 'Administration', 'email' => 'admin@famfer.sn',
-            'password' => 'password', 'est_admin' => true,
-        ]);
+        // L'administrateur vient du semis : le recréer heurterait la
+        // contrainte d'unicité sur l'adresse.
+        $this->admin = User::firstWhere('est_admin', true);
 
         // Un vendeur vérifié : le profil le plus tentant, puisqu'il a un
         // intérêt direct à trancher les litiges qui le concernent.

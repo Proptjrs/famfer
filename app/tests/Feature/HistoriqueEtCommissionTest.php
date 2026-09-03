@@ -45,10 +45,9 @@ class HistoriqueEtCommissionTest extends TestCase
             'utilisateur_id' => $u->id, 'genre' => 'chantier', 'telephone' => '+221 77 000 11 22',
         ]);
 
-        $this->admin = User::create([
-            'name' => 'Administration', 'email' => 'admin@famfer.sn',
-            'password' => 'password', 'est_admin' => true,
-        ]);
+        // L'administrateur vient du semis : le recréer heurterait la
+        // contrainte d'unicité sur l'adresse.
+        $this->admin = User::firstWhere('est_admin', true);
 
         $this->vendeur = Vendeur::where('statut', 'verifie')->orderBy('id')->firstOrFail();
         $this->offre = Offre::with('article.unitesVente')
