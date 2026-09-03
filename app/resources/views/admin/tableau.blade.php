@@ -2,191 +2,123 @@
 @section('titre', 'Administration')
 @section('contenu')
 
-<h1>Administration</h1>
-<p class="sous">Vue d'ensemble de la place de marché, sur trente jours.</p>
+<div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+  <h1 style="font-size:1.35rem">Administration</h1>
+  <a href="{{ route('admin.boutiques') }}" class="btn btn-sm btn-clair" style="margin-left:auto">
+    Les boutiques
+  </a>
+  <a href="{{ route('admin.commandes') }}" class="btn btn-sm btn-clair">Les commandes</a>
+</div>
 
-{{-- Les deux invariants du grand livre sont affichés en permanence : s'ils
-     tombent faux, c'est que l'argent ne se retrouve plus, et cela doit se voir
-     avant qu'un vendeur ne s'en aperçoive. --}}
-<div class="carte" style="margin-bottom:22px;border-left:4px solid
-     {{ $chiffres['livre_equilibre'] && $chiffres['sequestre_justifie'] ? 'var(--vert)' : 'var(--rouge)' }}">
-  <strong>Santé des comptes</strong>
-  <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap">
-    <span class="etiq {{ $chiffres['livre_equilibre'] ? 'etiq-vert' : 'etiq-rouge' }}">
-      Grand livre {{ $chiffres['livre_equilibre'] ? 'équilibré' : 'DÉSÉQUILIBRÉ' }}
+<div class="grille g4" style="margin-bottom:16px">
+  <div class="carte">
+    <div class="mono" style="font-size:1.5rem;font-weight:800">
+      {{ number_format($chiffres['volume_livre'], 0, ',', ' ') }} F
+    </div>
+    <div style="color:var(--gris);font-size:.84rem">Volume livré</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['commandes'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">Commandes</div>
+  </div>
+  <div class="carte" style="{{ $chiffres['boutiques_en_attente'] ? 'border:1px solid var(--orange)' : '' }}">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['boutiques_en_attente'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">Boutiques à valider</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['boutiques_actives'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">Boutiques actives</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['produits'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">Produits en vente</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['clients'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">Clients</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">
+      {{ $chiffres['a_expedier'] }}<span style="font-size:1rem;color:var(--gris)"> / {{ $chiffres['en_route'] }}</span>
+    </div>
+    <div style="color:var(--gris);font-size:.84rem">À expédier / en route</div>
+  </div>
+  <div class="carte" style="{{ $chiffres['taux_refus'] > 10 ? 'border:1px solid var(--rouge)' : '' }}">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['taux_refus'] }} %</div>
+    <div style="color:var(--gris);font-size:.84rem">
+      Colis refusés
+      {{-- L'indicateur qui dit si le paiement à la livraison tient : chaque
+           refus est une tournée payée pour rien. --}}
+      <br><span style="font-size:.78rem">{{ $chiffres['refusees'] }} refus au total</span>
+    </div>
+  </div>
+</div>
+
+<div class="bloc">
+  <div class="bloc-tete">
+    <h2>Boutiques à valider</h2>
+    <span style="color:var(--gris);font-size:.85rem">
+      Personne ne s'auto-valide : c'est ce qui protège les acheteurs.
     </span>
-    <span class="etiq {{ $chiffres['sequestre_justifie'] ? 'etiq-vert' : 'etiq-rouge' }}">
-      Séquestre {{ $chiffres['sequestre_justifie'] ? 'justifié' : 'INJUSTIFIÉ' }}
-    </span>
   </div>
-</div>
-
-<div class="grille g4" style="margin-bottom:26px">
-  <div class="carte">
-    <div class="chiffre mono" style="color:var(--vert)">
-      {{ number_format($chiffres['commission_acquise'], 0, ',', ' ') }}
-    </div>
-    <div class="chiffre-note">francs de commission acquise</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono" style="color:var(--ambre)">
-      {{ number_format($chiffres['sequestre_detenu'], 0, ',', ' ') }}
-    </div>
-    <div class="chiffre-note">retenus pour les acheteurs — pas un revenu</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono">{{ number_format($chiffres['du_aux_vendeurs'], 0, ',', ' ') }}</div>
-    <div class="chiffre-note">dus aux vendeurs</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono">{{ $chiffres['taux_annulation_pour_cent'] }} %</div>
-    <div class="chiffre-note">de commandes annulées</div>
-  </div>
-</div>
-
-<div class="grille g4" style="margin-bottom:30px">
-  <div class="carte">
-    <div class="chiffre mono">{{ $chiffres['vendeurs_verifies'] }}</div>
-    <div class="chiffre-note">vendeurs vérifiés</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono">{{ $chiffres['commandes'] }}</div>
-    <div class="chiffre-note">commandes</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono">{{ number_format($chiffres['volume_traite'], 0, ',', ' ') }}</div>
-    <div class="chiffre-note">francs de volume traité</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono">{{ number_format($chiffres['frais_operateur'], 0, ',', ' ') }}</div>
-    <div class="chiffre-note">francs de frais d'opérateur</div>
-  </div>
-</div>
-
-<h2>Vendeurs à vérifier</h2>
-@forelse($aVerifier as $v)
-  <div class="carte" style="margin-bottom:12px">
-    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:baseline">
-      <strong>{{ $v->raison_sociale }}</strong>
-      <span style="color:var(--gris)">
-        {{ $v->commune }} · NINEA {{ $v->ninea ?? '—' }} · {{ $v->telephone }}
-      </span>
-    </div>
-    <p style="color:var(--gris);font-size:.86rem;margin-top:6px">
-      Tant qu'il n'est pas vérifié, ce vendeur n'apparaît chez aucun acheteur.
-    </p>
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      <form method="POST" action="{{ route('admin.verifier', $v) }}">
-        @csrf <button class="btn btn-sm btn-vert">Vérifier</button>
-      </form>
-      <form method="POST" action="{{ route('admin.refuser.vendeur', $v) }}"
-            style="display:flex;gap:8px;align-items:center">
-        @csrf
-        <input name="motif" placeholder="Motif du refus" required
-               style="padding:6px 10px;border:1px solid var(--bord);border-radius:8px">
-        <button class="btn btn-sm btn-clair">Refuser</button>
-      </form>
-    </div>
-  </div>
-@empty
-  <div class="carte vide">Aucune demande en attente.</div>
-@endforelse
-
-<h2 style="margin-top:28px">Litiges à trancher</h2>
-@forelse($litiges as $l)
-  <div class="carte" style="margin-bottom:12px">
-    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:baseline">
-      <strong>{{ $l->commande->reference }}</strong>
-      <span class="etiq etiq-rouge">{{ str_replace('_', ' ', $l->motif) }}</span>
-      <span style="color:var(--gris)">
-        {{ $l->auteur->name }} contre {{ $l->commande->vendeur->raison_sociale }}
-      </span>
-      <span class="mono" style="margin-left:auto;font-weight:700">
-        {{ number_format($l->commande->montant_total, 0, ',', ' ') }} F retenus
-      </span>
-    </div>
-    <p style="margin-top:8px">{{ $l->description }}</p>
-
-    <form method="POST" action="{{ route('admin.trancher', $l) }}" style="margin-top:12px">
-      @csrf
-      <div class="champ">
-        <label>Décision motivée</label>
-        <textarea name="decision" rows="2" required minlength="10"></textarea>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button name="sens" value="acheteur" class="btn btn-sm btn-rouge">
-          Rembourser l'acheteur
-        </button>
-        <button name="sens" value="vendeur" class="btn btn-sm btn-vert">
-          Payer le vendeur
-        </button>
-      </div>
-      <p style="color:var(--gris);font-size:.84rem;margin-top:8px">
-        Rembourser l'acheteur n'engendre aucune commission ; les frais de
-        l'opérateur restent à la charge de la plateforme.
-      </p>
-    </form>
-  </div>
-@empty
-  <div class="carte vide">Aucun litige ouvert.</div>
-@endforelse
-
-{{-- Les maisons vérifiées, et le taux qu'on négocie avec chacune.
-     La colonne « taux_commission_pour_mille » existait par vendeur depuis le
-     début, mais rien ne permettait de la changer : tout le monde payait 8 %,
-     alors que la table prévoyait le contraire. --}}
-<h2 style="margin-top:34px">Les quincailleries et leur commission</h2>
-<div class="carte tableau-large"><table>
-  <tr>
-    <th>Maison</th><th>Commune</th><th>Note</th>
-    <th>Compte de versement</th><th style="width:210px">Commission</th>
-  </tr>
-  @forelse($maisons as $m)
-    <tr>
-      <td>
-        <a href="{{ route('vendeur.public', $m) }}">{{ $m->raison_sociale }}</a>
-        @if($m->statut === 'suspendu')<span class="etiq etiq-rouge">suspendue</span>@endif
-      </td>
-      <td style="color:var(--gris)">{{ $m->commune }}</td>
-      <td>
-        @if($m->nombre_evaluations)
-          <span class="mono">{{ $m->noteSurCinq() }}</span>
-          <span style="color:var(--gris);font-size:.82rem">({{ $m->nombre_evaluations }})</span>
-        @else
-          <span style="color:var(--gris);font-size:.82rem">—</span>
-        @endif
-      </td>
-      <td style="font-size:.84rem">
-        @if($m->peutEtreVire())
-          {{ $m->compteDeVersement() }}
-        @else
-          {{-- Sans destination, aucun virement ne peut partir : l'administration
-               doit pouvoir le repérer avant que le vendeur ne s'en plaigne. --}}
-          <span style="color:var(--forge)">aucun — virements impossibles</span>
-        @endif
-      </td>
-      <td>
-        <form method="POST" action="{{ route('admin.commission', $m) }}"
-              style="display:flex;gap:6px;align-items:center">
-          @csrf @method('PUT')
-          <input name="taux_pour_cent" value="{{ $m->taux_commission_pour_mille / 10 }}"
-                 style="width:70px;padding:6px 8px;border:1px solid var(--bord);border-radius:6px"
-                 inputmode="decimal">
-          <span style="color:var(--gris)">%</span>
-          <button class="btn btn-sm btn-clair">Fixer</button>
+  <div class="bloc-corps">
+    @forelse($aValider as $b)
+      <div style="display:flex;gap:12px;align-items:center;padding:10px 0;flex-wrap:wrap;
+                  border-bottom:1px solid var(--bord)">
+        <div style="flex:1 1 240px">
+          <strong>{{ $b->nom }}</strong>
+          <div style="color:var(--gris);font-size:.85rem">
+            {{ $b->utilisateur->name }} · {{ $b->telephone }}<br>
+            {{ $b->adresse }}, {{ $b->ville }}
+          </div>
+        </div>
+        <form method="POST" action="{{ route('admin.activer', $b) }}">
+          @csrf <button class="btn btn-sm btn-vert">Valider</button>
         </form>
-      </td>
-    </tr>
-  @empty
-    <tr><td colspan="5" style="color:var(--gris)">Aucune maison vérifiée.</td></tr>
-  @endforelse
-</table></div>
+        <details>
+          <summary class="btn btn-sm btn-clair" style="list-style:none">Refuser</summary>
+          <form method="POST" action="{{ route('admin.suspendre', $b) }}" class="carte"
+                style="margin-top:8px;min-width:260px">
+            @csrf
+            <div class="champ"><label>Motif</label>
+              <textarea name="motif" rows="2" required minlength="5"></textarea></div>
+            <button class="btn btn-sm btn-rouge">Refuser</button>
+          </form>
+        </details>
+      </div>
+    @empty
+      <div class="vide">Aucune boutique en attente.</div>
+    @endforelse
+  </div>
+</div>
 
-<div style="margin-top:18px">{{ $maisons->links() }}</div>
-
-<p style="color:var(--gris);font-size:.86rem;margin-top:14px;max-width:72ch">
-  Un taux modifié ne vaut que pour l'avenir : chaque commande fige le sien à sa
-  création, et les commandes déjà passées ne sont pas recalculées.
-</p>
+@if($meilleures->isNotEmpty())
+  <div class="bloc">
+    <div class="bloc-tete"><h2>Les boutiques les mieux notées</h2></div>
+    <div class="bloc-corps large">
+      <table>
+        <tr><th>Boutique</th><th>Ville</th><th>Note</th><th>Avis</th></tr>
+        @foreach($meilleures as $b)
+          <tr>
+            <td>
+              <a href="{{ route('boutique', $b) }}" style="color:var(--bleu)">{{ $b->nom }}</a>
+              @if($b->officielle)<span class="etiq etiq-officielle">Officielle</span>@endif
+            </td>
+            <td style="color:var(--gris)">{{ $b->ville }}</td>
+            <td>
+              @if($b->nombre_avis)
+                <span class="etoiles">{{ str_repeat('★', (int) round($b->noteSurCinq())) }}</span>
+                {{ $b->noteSurCinq() }}
+              @else
+                <span style="color:var(--gris)">—</span>
+              @endif
+            </td>
+            <td class="mono">{{ $b->nombre_avis }}</td>
+          </tr>
+        @endforeach
+      </table>
+    </div>
+  </div>
+@endif
 
 @endsection

@@ -36,13 +36,12 @@ php artisan migrate --force
 # marché en ligne sans marchandise.
 php artisan db:seed --class=CatalogueSeeder --force
 
-# Les quincailleries de démonstration et leur passé de commandes ne s'allument
-# que si on le demande. En production, la variable reste à « false » : les vrais
-# vendeurs s'inscrivent eux-mêmes.
+# Les clients de démonstration et leurs commandes livrées ne s'allument que si
+# on le demande. En production la variable reste à « false » : les vrais
+# clients s'inscrivent eux-mêmes.
 if [ "${DONNEES_DEMO}" = "true" ]; then
-    echo "DONNEES_DEMO=true — semis des vendeurs et de l'historique de démonstration."
-    php artisan db:seed --class=VendeursSeeder --force
-    php artisan db:seed --class=HistoriqueSeeder --force
+    echo "DONNEES_DEMO=true — semis des clients et des commandes de démonstration."
+    php artisan db:seed --class=ClientsSeeder --force
 fi
 
 # Ces caches se reconstruisent à chaque déploiement, jamais à la main : un cache

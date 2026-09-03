@@ -16,11 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => route('connexion'));
         $middleware->redirectUsersTo(fn () => route('accueil'));
 
-        // L'opérateur de paiement ne peut pas porter de jeton CSRF : il n'a pas
-        // visité de page pour en recevoir un. Sa requête est authentifiée
-        // autrement, par la signature que vérifie RappelPaiementController.
-        $middleware->validateCsrfTokens(except: ['rappel-paiement/*']);
-
         // Le rôle d'administration, sous un nom court utilisable sur un groupe
         // de routes. Sans lui, « administration/ » n'était gardé que par
         // « auth » — c'est-à-dire par rien du tout.

@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
  * quincaillerie, et trancher un litige en sa faveur. Ce dernier point déplace
  * de l'argent réel du séquestre vers un compte.
  *
- * La colonne « est_admin » existait depuis le début ; rien ne la lisait jamais.
+ * Le rôle est porté par la colonne « role » du compte.
  *
  * Une tentative est journalisée plutôt que silencieusement refusée : sur une
  * plateforme qui détient des fonds, savoir qui a essayé d'entrer vaut autant
@@ -28,7 +28,7 @@ class EstAdministrateur
     {
         $utilisateur = $request->user();
 
-        if ($utilisateur === null || ! $utilisateur->est_admin) {
+        if ($utilisateur === null || ! $utilisateur->estAdmin()) {
             Log::warning('Accès refusé à l\'administration', [
                 'utilisateur' => $utilisateur?->id,
                 'email' => $utilisateur?->email,

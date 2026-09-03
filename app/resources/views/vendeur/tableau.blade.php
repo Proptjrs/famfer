@@ -1,108 +1,103 @@
 @extends('layouts.app')
-@section('titre', 'Mon commerce')
+@section('titre', 'Ma boutique')
 @section('contenu')
 
-<h1>{{ $vendeur->raison_sociale }}</h1>
-<p class="sous">{{ $vendeur->commune }} · commission {{ $vendeur->taux_commission_pour_mille / 10 }} %</p>
-
-<div class="grille g4" style="margin-bottom:26px">
-  <div class="carte">
-    <div class="chiffre mono">{{ number_format($chiffres['chiffre_affaires'], 0, ',', ' ') }}</div>
-    <div class="chiffre-note">francs vendus sur 30 jours</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono" style="color:var(--vert)">{{ number_format($chiffres['net_percu'], 0, ',', ' ') }}</div>
-    <div class="chiffre-note">net, commission déduite</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono" style="color:var(--forge)">{{ number_format($chiffres['reste_du'], 0, ',', ' ') }}</div>
-    <div class="chiffre-note">que FamFer vous doit</div>
-  </div>
-  <div class="carte">
-    <div class="chiffre mono">{{ $chiffres['litiges_ouverts'] }}</div>
-    <div class="chiffre-note">litige(s) ouvert(s)</div>
-  </div>
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+  <h1 style="font-size:1.35rem">{{ $boutique->nom }}</h1>
+  @if($boutique->statut === 'en_attente')
+    <span class="etiq etiq-orange">En attente de validation</span>
+  @elseif($boutique->statut === 'suspendue')
+    <span class="etiq etiq-rouge">Suspendue</span>
+  @else
+    <span class="etiq etiq-vert">Active</span>
+  @endif
+  @if($boutique->officielle)<span class="etiq etiq-officielle">Officielle</span>@endif
+  <a href="{{ route('vendeur.produit.nouveau') }}" class="btn btn-sm" style="margin-left:auto">
+    Ajouter un produit
+  </a>
 </div>
 
-@if($chiffres['reste_du'] > 0)
-  <form method="POST" action="{{ route('vendeur.reversement') }}" class="carte" style="margin-bottom:26px">
-    @csrf
-    <h2>Demander mon virement</h2>
-    <p style="color:var(--gris);margin-bottom:12px">
-      Les commandes reçues sont d'abord soldées, puis le total vous est viré en une fois.
-      Un litige ouvert gèle la totalité.
-    </p>
-    <button class="btn btn-vert">Virer {{ number_format($chiffres['reste_du'], 0, ',', ' ') }} F</button>
-  </form>
+@if($boutique->statut === 'en_attente')
+  <div class="avis" style="background:var(--orange-pale);color:var(--orange-fonce)">
+    Votre boutique attend la validation de l'administration. Vous pouvez déjà
+    préparer vos produits : ils apparaîtront au catalogue dès la validation,
+    sans que vous ayez à les republier.
+  </div>
+@elseif($boutique->statut === 'suspendue')
+  <div class="avis avis-err">Boutique suspendue. {{ $boutique->motif_suspension }}</div>
 @endif
 
-<h2>Commandes à traiter</h2>
-@forelse($aTraiter as $c)
-  <div class="carte" style="margin-bottom:12px">
-    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:baseline">
-      <strong>{{ $c->reference }}</strong>
-      <span class="etiq etiq-ambre">{{ $c->etat }}</span>
-      <span style="color:var(--gris)">{{ $c->acheteur->utilisateur->name }}</span>
-      <span class="mono" style="margin-left:auto;font-weight:700">
-        {{ number_format($c->montant_total, 0, ',', ' ') }} F
-      </span>
+<div class="grille g4" style="margin-bottom:16px">
+  <div class="carte">
+    <div class="mono" style="font-size:1.5rem;font-weight:800">
+      {{ number_format($chiffres['chiffre_affaires'], 0, ',', ' ') }} F
     </div>
-
-    <div style="color:var(--gris);font-size:.88rem;margin-top:6px">
-      @foreach($c->lignes as $l)
-        {{ $l->quantite_affichee }} {{ $l->unite_affichee }} — {{ $l->offre->article->designation }}<br>
-      @endforeach
-      {{ $c->mode_remise === 'livraison' ? 'Livraison : ' . $c->adresse_livraison : 'Retrait au magasin' }}
-    </div>
-
-    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-      @if($c->etat === 'payee')
-        <form method="POST" action="{{ route('vendeur.accepter', $c) }}">
-          @csrf <button class="btn btn-sm btn-vert">Accepter</button>
-        </form>
-        <form method="POST" action="{{ route('vendeur.refuser', $c) }}">
-          @csrf <button class="btn btn-sm btn-clair">Refuser</button>
-        </form>
-      @elseif($c->etat === 'acceptee')
-        <form method="POST" action="{{ route('vendeur.prete', $c) }}">
-          @csrf <button class="btn btn-sm">Marquer prête</button>
-        </form>
-      @elseif($c->etat === 'prete')
-        <form method="POST" action="{{ route('vendeur.remettre', $c) }}">
-          @csrf <button class="btn btn-sm btn-vert">Remettre la marchandise</button>
-        </form>
+    <div style="color:var(--gris);font-size:.84rem">Ventes livrées</div>
+  </div>
+  <div class="carte">
+    <div class="mono" style="font-size:1.5rem;font-weight:800">{{ $chiffres['articles_vendus'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">Articles vendus</div>
+  </div>
+  <div class="carte" style="{{ $chiffres['a_expedier'] ? 'border:1px solid var(--orange)' : '' }}">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['a_expedier'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">À expédier</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['en_route'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">En route</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['produits'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">Produits</div>
+  </div>
+  <div class="carte" style="{{ $chiffres['en_rupture'] ? 'border:1px solid var(--rouge)' : '' }}">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['en_rupture'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">En rupture</div>
+  </div>
+  <div class="carte">
+    <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['refusees'] }}</div>
+    <div style="color:var(--gris);font-size:.84rem">
+      Refusées à la porte
+      {{-- Le paiement à la livraison a ce coût-là, et il faut le voir : chaque
+           refus est une tournée payée pour rien. --}}
+      @if($chiffres['refusees'])
+        <br><span style="color:var(--rouge)">chaque refus coûte une tournée</span>
       @endif
     </div>
   </div>
-@empty
-  <div class="carte vide">Rien à traiter.</div>
-@endforelse
+</div>
 
-@if($dormants)
-  <h2 style="margin-top:28px">Ce qui dort depuis 60 jours</h2>
-  <div class="carte">
-    <div class="tableau-large">
-      <table>
-        <tr><th>Article</th><th style="text-align:right">En stock</th></tr>
-        @foreach($dormants as $d)
-          <tr>
-            <td>{{ $d['article'] }}</td>
-            <td class="mono" style="text-align:right">
-              {{ number_format($d['quantite_pivot'] / 1000, 0, ',', ' ') }} kg
-            </td>
-          </tr>
-        @endforeach
-      </table>
-    </div>
-    <p style="color:var(--gris);font-size:.86rem;margin-top:10px">
-      Du fer immobilisé, c'est de la trésorerie qui dort.
-    </p>
+<div class="bloc">
+  <div class="bloc-tete">
+    <h2>Commandes à traiter</h2>
+    <a href="{{ route('vendeur.commandes') }}" class="btn btn-sm btn-clair">Toutes mes ventes</a>
   </div>
-@endif
+  <div class="bloc-corps">
+    @forelse($aTraiter as $c)
+      <div style="display:flex;gap:12px;align-items:center;padding:10px 0;flex-wrap:wrap;
+                  border-bottom:1px solid var(--bord)">
+        <strong>{{ $c->reference }}</strong>
+        @include('partials.etat', ['etat' => $c->etat])
+        <span style="color:var(--gris);font-size:.85rem">
+          {{ $c->lignes->where('boutique_id', $boutique->id)->count() }} de vos articles
+        </span>
+        <span class="mono" style="margin-left:auto;font-weight:700">
+          {{ number_format($c->lignes->where('boutique_id', $boutique->id)->sum('montant'), 0, ',', ' ') }} F
+        </span>
+        @if($c->etat === 'en_preparation')
+          <form method="POST" action="{{ route('vendeur.expedier', $c) }}">
+            @csrf <button class="btn btn-sm">Expédier</button>
+          </form>
+        @elseif(in_array($c->etat, ['expediee', 'en_livraison']))
+          <form method="POST" action="{{ route('vendeur.livrer', $c) }}">
+            @csrf <button class="btn btn-sm btn-vert">Marquer livrée</button>
+          </form>
+        @endif
+      </div>
+    @empty
+      <div class="vide">Aucune commande en attente.</div>
+    @endforelse
+  </div>
+</div>
 
-<p style="margin-top:24px;display:flex;gap:20px;flex-wrap:wrap">
-  <a href="{{ route('vendeur.offres') }}">Gérer mes offres et mon stock →</a>
-  <a href="{{ route('vendeur.commandes') }}">Toutes mes commandes →</a>
-  <a href="{{ route('vendeur.argent') }}">Mon argent et mes virements →</a>
-</p>
 @endsection

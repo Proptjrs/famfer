@@ -1,107 +1,94 @@
 @extends('layouts.app')
 @section('titre', 'Conditions générales')
 @section('contenu')
+
 <div style="max-width:74ch">
 
 <h1>Conditions générales</h1>
-<p class="sous">
-  Ce que FamFer fait de votre argent, et ce qu'elle n'en fait pas.
+<p style="color:var(--gris);margin-bottom:18px">
+  Comment FamFer fonctionne, et ce que chacun s'engage à faire.
   Dernière mise à jour : {{ now()->translatedFormat('j F Y') }}.
 </p>
 
-<h2>1. Ce qu'est FamFer</h2>
-<p>
-  FamFer met en relation des quincailleries et des acheteurs de fer et de pièces
-  détachées. La plateforme n'est <strong>ni vendeur ni fabricant</strong> : elle
-  ne détient aucune marchandise. Le contrat de vente lie l'acheteur et la
-  quincaillerie ; FamFer en est le tiers de confiance.
+<div class="carte">
+
+<h2 style="margin:0 0 8px">1. Ce qu'est FamFer</h2>
+<p style="margin-bottom:16px">
+  FamFer met en relation des boutiques de fer et de quincaillerie avec des
+  acheteurs. La plateforme n'est <strong>ni vendeur ni fabricant</strong> :
+  elle ne détient aucune marchandise. Le contrat de vente lie l'acheteur et la
+  boutique.
 </p>
 
-<h2>2. L'argent est retenu, pas encaissé</h2>
-<p>
-  Quand un acheteur règle une commande, la somme n'est pas versée au vendeur :
-  elle est <strong>retenue par FamFer</strong> jusqu'à ce que l'acheteur
-  confirme avoir reçu sa marchandise. C'est ce qu'on appelle un séquestre.
+<h2 style="margin:0 0 8px">2. Le paiement à la livraison</h2>
+<p style="margin-bottom:8px">
+  Le mode par défaut est le règlement <strong>au livreur, en espèces</strong>,
+  au moment de recevoir la commande. FamFer ne détient donc jamais votre argent
+  avant la livraison, et ne vous demande aucun paiement à la commande.
 </p>
-<p>
-  Cette somme n'est pas un revenu de la plateforme. Elle figure dans ses comptes
-  comme une <strong>dette</strong> envers l'acheteur puis envers le vendeur, et
-  la comptabilité de FamFer doit à tout instant pouvoir le démontrer.
-</p>
-<p>
-  Sans confirmation de l'acheteur, la réception est réputée acquise
-  <strong>soixante-douze heures</strong> après la remise : sans cette règle, un
-  acheteur distrait retiendrait indéfiniment l'argent d'un vendeur.
+<p style="margin-bottom:16px">
+  La contrepartie est un engagement : le colis part avant d'être payé, et une
+  tournée coûte à la boutique. <strong>Refuser un colis sans motif</strong> à
+  répétition peut entraîner la suspension du compte.
 </p>
 
-<h2>3. Ce que FamFer prélève</h2>
-<p>
-  Une commission, dont le taux figure sur l'espace de chaque vendeur — 8 % par
-  défaut, négociable. Elle porte sur <strong>la marchandise seule</strong> :
-  jamais sur les frais de livraison, qui reviennent entièrement au vendeur.
-</p>
-<p>
-  Rien n'est prélevé à l'inscription, ni à la publication d'une offre. La
-  commission n'est due qu'une fois la commande reçue : une vente annulée,
-  expirée ou remboursée <strong>ne coûte rien</strong> au vendeur.
+<h2 style="margin:0 0 8px">3. Les frais de livraison</h2>
+<p style="margin-bottom:16px">
+  Un forfait par région, affiché avant la validation de la commande — de
+  1 500 F sur Dakar à 5 000 F pour les régions les plus éloignées. La livraison
+  est <strong>offerte à partir de 50 000 F</strong> d'achat.
 </p>
 
-<h2>4. Les délais</h2>
-<ul>
-  <li><strong>Quinze minutes</strong> pour régler une commande, faute de quoi
-      la marchandise réservée est rendue au stock du vendeur.</li>
-  <li><strong>Deux heures</strong> pour que le vendeur accepte une commande
-      payée ; passé ce délai, l'acheteur est remboursé.</li>
-  <li><strong>Soixante-douze heures</strong> après la remise pour signaler un
-      problème.</li>
+<h2 style="margin:0 0 8px">4. Annuler, refuser, retourner</h2>
+<ul style="margin:0 0 16px 20px">
+  <li>Tant que la commande est <strong>en préparation</strong>, vous l'annulez
+      vous-même depuis votre espace, sans frais ni justification.</li>
+  <li>Une fois expédiée, elle ne s'annule plus en ligne : contactez la boutique.</li>
+  <li>Un article non conforme se signale à la livraison ; le stock est rendu au
+      vendeur et rien ne vous est facturé.</li>
 </ul>
 
-<h2>5. Les litiges</h2>
-<p>
-  Un litige ouvert <strong>gèle la totalité</strong> des virements dus au
-  vendeur concerné, et non la seule commande contestée. L'administration
-  tranche par une décision motivée. Un remboursement décidé en faveur de
-  l'acheteur n'engendre aucune commission.
+<h2 style="margin:0 0 8px">5. Les boutiques</h2>
+<p style="margin-bottom:16px">
+  Aucune boutique n'apparaît au catalogue avant d'avoir été validée par
+  l'administration. Une boutique reste responsable de la conformité, de la
+  qualité et de la disponibilité de ce qu'elle affiche. Les prix barrés doivent
+  correspondre à un prix réellement pratiqué : une remise annoncée sur un prix
+  gonflé est un motif de suspension.
 </p>
 
-<h2>6. Les vendeurs</h2>
-<p>
-  Aucune quincaillerie n'apparaît sur la place de marché avant vérification de
-  son établissement : c'est la contrepartie du séquestre, puisque la plateforme
-  encaisse pour son compte. Un vendeur reste responsable de la conformité, de la
-  qualité et de la quantité de ce qu'il livre.
+<h2 style="margin:0 0 8px">6. Les avis</h2>
+<p style="margin-bottom:16px">
+  Un avis ne peut être laissé que par un client dont la commande a été
+  <strong>livrée</strong>, et un produit ne se note qu'une fois par commande.
+  Les notes affichées — celle du produit comme celle de la boutique — sont
+  recalculées depuis les avis ; elles ne sont jamais saisies à la main, ni par
+  le vendeur, ni par la plateforme.
 </p>
 
-<h2>7. Les avis</h2>
-<p>
-  Une note ne peut être laissée que par un acheteur ayant <strong>réellement
-  reçu</strong> la commande qu'il note, et une commande ne se note qu'une fois.
-  La moyenne affichée est recalculée depuis les avis ; elle n'est jamais saisie
-  à la main, ni par le vendeur, ni par la plateforme.
+<h2 style="margin:0 0 8px">7. Vos données</h2>
+<p style="margin-bottom:16px">
+  Les adresses de votre carnet servent à livrer et à vous joindre. L'adresse
+  d'une commande passée est recopiée au moment de la commande : corriger votre
+  carnet ne modifie pas une livraison déjà en cours. Vos données ne sont ni
+  vendues ni cédées.
 </p>
 
-<h2>8. Les données</h2>
-<p>
-  La position transmise pendant une recherche sert à trouver les structures les
-  plus proches et à chiffrer une livraison. Les coordonnées enregistrées sur un
-  compte servent à livrer et à joindre son titulaire. Elles ne sont ni vendues
-  ni cédées.
-</p>
-
-<h2>9. Le service</h2>
-<p>
+<h2 style="margin:0 0 8px">8. Le service</h2>
+<p style="margin-bottom:16px">
   FamFer met tout en œuvre pour rester accessible, sans garantir une
-  disponibilité ininterrompue. En cas d'interruption, les sommes séquestrées
-  restent dues à qui de droit : elles sont inscrites en comptabilité et ne
-  dépendent pas de l'état du service.
+  disponibilité ininterrompue. Une commande enregistrée le reste, quelle que
+  soit la disponibilité du site.
 </p>
 
-<h2>10. Nous joindre</h2>
-<p>
+<h2 style="margin:0 0 8px">9. Nous joindre</h2>
+<p style="margin:0">
   Institut Supérieur d'Informatique, Dakar — projet de fin de cycle de master.
-  Pour toute question sur une commande ou un virement, écrivez depuis l'adresse
-  du compte concerné.
+  Pour toute question sur une commande, écrivez depuis l'adresse du compte
+  concerné.
 </p>
 
 </div>
+</div>
+
 @endsection

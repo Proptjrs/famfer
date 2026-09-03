@@ -1,80 +1,95 @@
-# Le projet
+# FamFer — place de marché du fer et de la quincaillerie
 
-**Nom :** FamFer
-GUEYE Samba · Master Génie logiciel · ISI Dakar
+## Le projet
 
----
+Une place de marché grand public pour le fer, les tôles et la quincaillerie au
+Sénégal. Des boutiques publient leurs produits, les clients comparent, commandent
+et se font livrer. Le règlement se fait **à la livraison**, en espèces, au
+livreur.
 
-## Ce que c'est
+Le modèle est celui des places de marché grand public de la région : catalogue
+par rayons, recherche, filtres, promotions, avis clients, suivi de commande.
 
-Une place de marché nationale du fer et des pièces détachées. Les quincailleries
-s'inscrivent et publient leur stock. Les acheteurs — particuliers, chefs de
-chantier, entreprises — comparent les prix, commandent et paient sur la
-plateforme. L'argent est retenu jusqu'à la livraison, puis reversé au vendeur,
-diminué d'une commission.
+## Ce qui a changé, et pourquoi c'est écrit ici
 
-Le modèle est celui de Yango : la plateforme ne vend rien, elle met en relation
-et prélève un pourcentage.
+Une première version de FamFer reposait sur un **séquestre** : la plateforme
+encaissait le paiement, le retenait, et ne le reversait au vendeur qu'une fois
+la réception confirmée. Elle tenait un grand livre en partie double, convertissait
+les unités de vente au gramme près pour comparer une barre à une tonne, et
+verrouillait le stock contre les commandes concurrentes.
 
-## Ce que ce n'est pas
+Ce modèle a été **abandonné à la demande**, au profit du modèle grand public
+décrit ici. Il reste consultable en entier :
 
-Ce n'est pas un logiciel de gestion de stock pour un magasin. Ce n'est pas un
-annuaire de quincailleries. La différence tient en un point : **la plateforme
-encaisse**. C'est ce qui rend la commission incontournable, et c'est ce qui fait
-la difficulté technique du sujet.
+```bash
+git checkout v1-sequestre
+```
 
-## Les trois problèmes qui font le niveau master
+Les deux se défendent, et le choix n'est pas technique :
 
-### 1. Le catalogue partagé contre les offres
+| | Séquestre | Paiement à la livraison |
+|---|---|---|
+| Qui détient l'argent | la plateforme, jusqu'à réception | personne : le client paie au livreur |
+| Ce qui protège l'acheteur | la rétention des fonds | le droit de refuser le colis |
+| Ce qui protège le vendeur | la commission garantie | rien : un refus lui coûte une tournée |
+| Ce qu'il faut construire | comptabilité, réconciliation, litiges | suivi de commande, gestion des refus |
+| Adoption au Sénégal | à convaincre | déjà l'usage |
 
-Si chaque vendeur saisit son article à sa manière — « fer 10 », « T10 »,
-« FA T10 12m » — l'acheteur ne peut rien comparer, et la plateforme n'est qu'un
-annuaire.
+Le second est plus simple à faire adopter, et plus fragile à exploiter : chaque
+colis refusé est une tournée payée pour rien. C'est pourquoi le taux de refus
+figure au tableau de bord de l'administration et à celui de chaque boutique.
 
-Il faut donc **deux niveaux** :
+## Les acteurs
 
-- un **référentiel national** : un T10 est un T10, avec son diamètre, sa longueur
-  normalisée, sa masse linéique (0,617 kg/m) ;
-- des **offres** : le vendeur X propose ce T10 à 4 200 F la barre, il en a 340,
-  il est à 3 km de l'acheteur.
+**Trois rôles humains**, portés par une seule colonne du compte.
 
-Comparer devient possible. C'est la décision de conception la plus structurante.
+| Rôle | Comment il se distingue | Ce qu'il fait |
+|---|---|---|
+| Client | rôle `client` | cherche, compare, commande, suit, note |
+| Vendeur | rôle `vendeur` + une boutique validée | publie ses produits, expédie, livre |
+| Administration | rôle `admin` | valide les boutiques, suspend, met en avant |
 
-### 2. Le flux de l'argent
+Le rôle se choisit **à l'inscription** : le formulaire demande si l'on vient
+acheter ou vendre. Tout compte peut acheter, y compris celui d'un commerçant.
 
-La plateforme encaisse pour le compte d'autrui. L'argent en séquestre **ne lui
-appartient pas** : seule la commission est un revenu. Confondre les deux est
-l'erreur la plus fréquente, et la plus grave.
+Aucune boutique n'apparaît au catalogue avant validation. C'est le seul contrôle
+a priori du système, et il porte tout le reste : sans lui, n'importe qui
+publierait n'importe quoi sous n'importe quel prix.
 
-Le traitement est un **grand livre en partie double** — voir `04-grand-livre.md`.
+## Ce que la plateforme garantit
 
-### 3. La confiance
+**Le stock affiché est le stock réel.** Il baisse à la commande, sous verrou —
+c'est le seul endroit où deux clients peuvent se disputer le même article — et
+remonte si la commande est annulée, refusée ou retournée.
 
-Pourquoi un chef de chantier paierait-il un vendeur qu'il ne connaît pas ?
+**Le prix affiché est le prix facturé.** La ligne de commande recopie le nom et
+le prix : un vendeur qui change son tarif le lendemain ne change pas ce que le
+client a accepté. De même pour l'adresse de livraison, recopiée au moment de la
+commande.
 
-- vérification des vendeurs à l'inscription ;
-- notation après livraison ;
-- séquestre : le vendeur n'est payé qu'après réception confirmée ;
-- procédure de litige avant reversement.
+**La remise annoncée est vraie.** Elle se calcule du prix barré et du prix de
+vente ; elle ne se saisit pas. Un prix barré inférieur au prix de vente est
+refusé à la publication.
 
-## Les unités, une difficulté propre au métier
+**Une note vient d'un achat livré.** Un produit ne se note qu'une fois par
+commande, et les moyennes — du produit comme de la boutique — sont recalculées
+depuis les avis. Elles ne sont jamais écrites à la main.
 
-Le fer s'achète à la tonne, se stocke à la barre, se vend au kilo ou à la barre.
-Une tôle se vend à la feuille ou au mètre carré.
+**Les frais de livraison se devinent avant de commander.** Un forfait par
+région, de 1 500 F sur Dakar à 5 000 F pour les régions éloignées, et la
+gratuité au-dessus de 50 000 F.
 
-Chaque article du référentiel porte une **unité pivot** et ses facteurs de
-conversion. Un T10 de 12 m pèse 7,4 kg ; une tonne fait donc 135 barres. Le
-système convertit, l'utilisateur ne calcule jamais.
+## Le périmètre
 
-Les arrondis se traitent une fois pour toutes : les quantités en pivot sont
-stockées en entier — en grammes, en millimètres — jamais en flottant.
+Ce qui est volontairement laissé de côté, et à assumer comme des choix :
 
-## La limite à assumer devant le jury
+- **Le paiement en ligne effectif.** Wave et Orange Money figurent comme modes
+  de règlement, mais aucun appel n'est fait à un opérateur : le client est
+  rappelé. Un vrai encaissement demande un contrat commercial.
+- **Les livreurs indépendants.** Le vendeur livre lui-même. Un réseau de
+  livreurs avec suivi en temps réel est un sujet à lui seul.
+- **L'application mobile native.** Le web adaptatif suffit.
 
-Encaisser pour le compte d'autrui suppose, dans la vie réelle, un accord avec un
-opérateur de paiement agréé. Un projet d'étude travaille en **environnement de
-test** : Wave, PayDunya et CinetPay en fournissent un.
+## Où en est le code
 
-Cette limite se dit clairement. Elle ne diminue pas le travail : l'intégration,
-l'idempotence des rappels et la réconciliation sont identiques en test et en
-production.
+Voir [02-etat-des-lieux.md](02-etat-des-lieux.md).

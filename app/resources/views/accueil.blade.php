@@ -1,108 +1,90 @@
 @extends('layouts.app')
-@section('titre', 'Le fer, au juste prix')
+@section('titre', 'Le fer et la quincaillerie, livrés partout au Sénégal')
 @section('contenu')
 
-@if(! $filtre)
-  {{-- La bannière ne se montre qu'à l'arrivée : une fois qu'on cherche, elle
-       vole la place des résultats. --}}
-  <section style="background:linear-gradient(135deg,var(--nuit) 0%,var(--acier-2) 100%);
-                  border-radius:var(--r);padding:52px 40px;margin-bottom:34px;
-                  color:#fff;position:relative;overflow:hidden">
-    <div style="position:absolute;right:-70px;top:-60px;width:340px;height:340px;
-                background:radial-gradient(circle,rgba(253,126,20,.22),transparent 68%)"></div>
-    <div style="position:relative;max-width:660px">
-      <span class="etiq etiq-forge" style="margin-bottom:16px">Place de marché nationale</span>
-      <h1 style="font-size:3rem;margin:14px 0 16px;color:#fff">
-        Le même fer,<br>chez plusieurs quincailleries.
-      </h1>
-      <p style="color:#C3CCD5;font-size:1.08rem;margin-bottom:26px;max-width:56ch">
-        L'un vend à la barre, l'autre au kilo, le troisième à la tonne.
-        FamFer ramène tout au même poids et vous montre qui est le moins cher —
-        avec la distance et le stock réel.
-      </p>
-      <form method="GET" action="{{ route('accueil') }}"
-            style="display:flex;gap:10px;flex-wrap:wrap;max-width:560px">
-        <input name="q" value="{{ $termes }}" autofocus
-               placeholder="fer 10, tôle bac, cornière 40, électrode…"
-               style="flex:1 1 260px;min-width:0;padding:14px 18px;border:0;
-                      border-radius:var(--r-sm);font-size:1rem">
-        <button class="btn" style="padding:14px 26px">Rechercher</button>
-      </form>
+{{-- Le bandeau d'accueil. Il annonce ce qui décide un achat sur une place de
+     marché : le prix de la livraison, et le seuil au-dessus duquel elle est
+     offerte. --}}
+<div style="background:linear-gradient(100deg,#F68B1E,#D9740C);border-radius:var(--r);
+            padding:26px 24px;margin-bottom:16px;color:#fff;display:flex;gap:22px;
+            flex-wrap:wrap;align-items:center">
+  <div style="flex:1 1 320px">
+    <div style="font-size:.78rem;font-weight:800;letter-spacing:1px;opacity:.9;
+                text-transform:uppercase;margin-bottom:8px">
+      Place de marché nationale
     </div>
-  </section>
-@else
-  {{-- La barre de recherche et les filtres ne font qu'un formulaire : filtrer
-       sans reperdre les mots tapés est le minimum attendu. --}}
-  <form method="GET" action="{{ route('accueil') }}" class="filtres"
-        style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:26px">
-    <div style="flex:1 1 240px;min-width:0">
-      <label style="font-size:.8rem;font-weight:600;display:block;margin-bottom:4px">Recherche</label>
-      <input name="q" value="{{ $termes }}" placeholder="fer 10, tôle bac…"
-             style="width:100%;padding:11px 14px;border:1px solid var(--bord);
-                    border-radius:var(--r-sm)">
+    <div style="font-size:1.9rem;font-weight:800;line-height:1.15;margin-bottom:10px">
+      Le fer, les tôles et la quincaillerie<br>livrés chez vous.
     </div>
-    <div style="flex:0 1 200px">
-      <label style="font-size:.8rem;font-weight:600;display:block;margin-bottom:4px">Famille</label>
-      <select name="famille" style="width:100%;padding:11px 12px;border:1px solid var(--bord);
-                                    border-radius:var(--r-sm)">
-        <option value="">Toutes</option>
-        @foreach($familles as $f)
-          <option value="{{ $f->id }}" @selected($famille === $f->id)>{{ $f->nom }}</option>
-        @endforeach
-      </select>
+    <div style="opacity:.95">
+      {{ App\Models\Produit::where('actif', true)->count() }} produits ·
+      {{ App\Models\Boutique::where('statut', 'active')->count() }} boutiques ·
+      paiement à la livraison
     </div>
-    <div style="flex:0 1 170px">
-      <label style="font-size:.8rem;font-weight:600;display:block;margin-bottom:4px">Prix maximum</label>
-      <input name="prix_max" value="{{ $prixMax }}" inputmode="numeric" placeholder="F par unité"
-             style="width:100%;padding:11px 14px;border:1px solid var(--bord);
-                    border-radius:var(--r-sm)">
-    </div>
-    <button class="btn" style="padding:11px 22px">Filtrer</button>
-    @if($famille || $prixMax)
-      <a href="{{ route('accueil', ['q' => $termes]) }}" class="btn btn-clair"
-         style="padding:11px 18px">Tout effacer</a>
-    @endif
-  </form>
-@endif
-
-@if($filtre)
-  <h2>
-    {{ $articles->total() }} article{{ $articles->total() > 1 ? 's' : '' }}
-    @if($termes !== '') pour « {{ $termes }} » @endif
-  </h2>
-
-  <div class="grille g3">
-    @forelse($articles as $a)
-      @include('partials.produit', ['a' => $a])
-    @empty
-      <div class="carte vide" style="grid-column:1/-1">
-        Rien ne correspond à cette recherche.<br>
-        Essayez le vocabulaire du chantier : « fer 10 », « tôle bac », « corniere 40 »,
-        ou élargissez le prix maximum.
-      </div>
-    @endforelse
   </div>
-
-  <div style="margin-top:24px">{{ $articles->links() }}</div>
-@else
-  @foreach($familles as $f)
-    @php $articlesFamille = $f->articles()->where('actif', true)->orderBy('id')->take(4)->get(); @endphp
-    @continue($articlesFamille->isEmpty())
-
-    <div style="display:flex;align-items:baseline;gap:14px;margin:34px 0 16px">
-      <h2 style="margin:0">{{ $f->nom }}</h2>
-      <span style="color:var(--gris);font-size:.9rem">{{ $f->articles()->count() }} références</span>
-      <a href="{{ route('accueil', ['q' => $f->nom]) }}" style="margin-left:auto;font-weight:600">
-        Tout voir →
-      </a>
+  <div style="background:rgba(255,255,255,.16);border-radius:var(--r);padding:16px 20px">
+    <div style="font-weight:800;font-size:1.05rem">Livraison offerte</div>
+    <div style="opacity:.95">dès 50 000 F d'achat</div>
+    <div style="opacity:.85;font-size:.84rem;margin-top:6px">
+      Sinon à partir de 1 500 F sur Dakar
     </div>
+  </div>
+</div>
 
+{{-- Les rayons, en grand, pour ceux qui parcourent au lieu de chercher. --}}
+<div class="bloc">
+  <div class="bloc-tete"><h2>Nos rayons</h2></div>
+  <div class="bloc-corps">
     <div class="grille g4">
-      @foreach($articlesFamille as $a)
-        @include('partials.produit', ['a' => $a, 'compact' => true])
+      @foreach($rayons as $rayon)
+        <a href="{{ route('rayon', $rayon) }}"
+           style="display:flex;flex-direction:column;align-items:center;gap:8px;
+                  padding:16px 10px;border-radius:var(--r);text-align:center;
+                  border:1px solid var(--bord)">
+          <span style="color:var(--orange);transform:scale(2.1);margin:8px 0 12px">
+            @include('partials.icone', ['icone' => $rayon->icone])
+          </span>
+          <span style="font-weight:600;font-size:.88rem">{{ $rayon->nom }}</span>
+          <span style="color:var(--gris);font-size:.78rem">{{ $rayon->produits_count }} produits</span>
+        </a>
       @endforeach
     </div>
-  @endforeach
+  </div>
+</div>
+
+@if($promotions->isNotEmpty())
+  <div class="bloc">
+    <div class="bloc-tete" style="background:var(--orange-pale)">
+      <h2 style="color:var(--orange-fonce)">Promotions</h2>
+      <span style="color:var(--gris-fonce);font-size:.86rem">
+        Les plus fortes remises du moment
+      </span>
+      <a href="{{ route('recherche', ['tri' => 'remise']) }}" class="btn btn-sm">Tout voir</a>
+    </div>
+    <div class="bloc-corps">
+      <div class="grille g4">
+        @foreach($promotions as $p)
+          @include('partials.carte', ['p' => $p])
+        @endforeach
+      </div>
+    </div>
+  </div>
+@endif
+
+@if($populaires->isNotEmpty())
+  <div class="bloc">
+    <div class="bloc-tete">
+      <h2>Les plus vendus</h2>
+      <a href="{{ route('recherche', ['tri' => 'ventes']) }}" class="btn btn-sm btn-clair">Tout voir</a>
+    </div>
+    <div class="bloc-corps">
+      <div class="grille g4">
+        @foreach($populaires as $p)
+          @include('partials.carte', ['p' => $p])
+        @endforeach
+      </div>
+    </div>
+  </div>
 @endif
 
 @endsection

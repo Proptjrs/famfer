@@ -5,19 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Une ligne de commande.
+ *
+ * Le nom et le prix sont recopiés, pas référencés : un vendeur qui change son
+ * tarif le lendemain ne doit pas changer ce que le client a accepté.
+ */
 class LigneCommande extends Model
 {
     protected $table = 'lignes_commande';
 
     protected $fillable = [
-        'commande_id', 'offre_id', 'quantite_pivot', 'unite_affichee',
-        'quantite_affichee', 'prix_unitaire_fige', 'montant',
+        'commande_id', 'produit_id', 'boutique_id',
+        'nom_produit', 'prix_unitaire', 'quantite', 'montant',
     ];
 
     protected $casts = [
-        'quantite_pivot' => 'integer',
-        'prix_unitaire_fige' => 'integer',
-        'montant' => 'integer',
+        'prix_unitaire' => 'integer', 'quantite' => 'integer', 'montant' => 'integer',
     ];
 
     public function commande(): BelongsTo
@@ -25,8 +29,13 @@ class LigneCommande extends Model
         return $this->belongsTo(Commande::class);
     }
 
-    public function offre(): BelongsTo
+    public function produit(): BelongsTo
     {
-        return $this->belongsTo(Offre::class);
+        return $this->belongsTo(Produit::class);
+    }
+
+    public function boutique(): BelongsTo
+    {
+        return $this->belongsTo(Boutique::class);
     }
 }

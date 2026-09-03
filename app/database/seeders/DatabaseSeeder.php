@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -9,21 +10,19 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
-    /**
-     * L'ordre compte : le catalogue, puis les maisons, puis leur passé.
-     *
-     * Chaque seeder se garde lui-même contre un second passage, de sorte qu'un
-     * « db:seed » relancé n'écrase rien et ne double rien.
-     */
     public function run(): void
     {
+        // L'administration d'abord : sans elle, aucune boutique ne peut être
+        // validée, et l'espace d'arbitrage reste inatteignable.
+        User::firstOrCreate(
+            ['email' => 'admin@famfer.sn'],
+            ['name' => 'Administration FamFer', 'password' => 'password',
+             'role' => 'admin', 'telephone' => '+221 33 800 00 00']
+        );
+
         $this->call([
             CatalogueSeeder::class,
-            VendeursSeeder::class,
-            HistoriqueSeeder::class,
+            ClientsSeeder::class,
         ]);
     }
 }

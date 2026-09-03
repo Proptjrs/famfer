@@ -38,12 +38,12 @@
       <label style="margin-bottom:10px">Vous venez sur FamFer pour</label>
       <div class="choix-role">
         <label>
-          <input type="radio" name="role" value="acheteur"
-                 @checked(old('role', $roleParDefaut) === 'acheteur')>
+          <input type="radio" name="role" value="client"
+                 @checked(old('role', $roleParDefaut) === 'client')>
           <span class="dedans">
-            <span class="puce"></span><strong>Acheter du fer</strong>
+            <span class="puce"></span><strong>Acheter</strong>
             <span class="quoi">
-              Comparer les prix des quincailleries, commander, se faire livrer.
+              Comparer les prix, commander, se faire livrer partout au Sénégal.
             </span>
           </span>
         </label>
@@ -52,10 +52,10 @@
           <input type="radio" name="role" value="vendeur"
                  @checked(old('role', $roleParDefaut) === 'vendeur')>
           <span class="dedans">
-            <span class="puce"></span><strong>Vendre du fer</strong>
+            <span class="puce"></span><strong>Vendre</strong>
             <span class="quoi">
-              Vous tenez une quincaillerie. Votre établissement sera vérifié
-              avant d'apparaître chez les acheteurs.
+              Vous tenez une quincaillerie. Votre boutique sera validée avant
+              d'apparaître au catalogue.
             </span>
           </span>
         </label>
@@ -75,15 +75,7 @@
       <input name="telephone" value="{{ old('telephone') }}" placeholder="+221 77 000 00 00" required>
       @error('telephone')<div class="erreur">{{ $message }}</div>@enderror</div>
 
-    {{-- Tout compte peut acheter, y compris celui d'un commerçant : une
-         quincaillerie s'approvisionne aussi. Le genre reste donc demandé. --}}
-    <div class="champ"><label>Vous achetez en tant que</label>
-      <select name="genre" required>
-        @foreach(['particulier' => 'Particulier', 'chantier' => 'Chantier',
-                  'entreprise' => 'Entreprise'] as $c => $mot)
-          <option value="{{ $c }}" @selected(old('genre') === $c)>{{ $mot }}</option>
-        @endforeach
-      </select></div>
+
 
     <div class="champ"><label>Mot de passe</label>
       <input type="password" name="password" required placeholder="8 caractères minimum"
