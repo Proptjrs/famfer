@@ -37,7 +37,12 @@ class AuthController extends Controller
 
     public function formulaireInscription()
     {
-        return view('auth.inscription');
+        // Qui arrive par « Vendez sur FamFer » a déjà répondu à la question :
+        // on ne la lui repose pas à zéro, on présente son choix coché.
+        $intention = session('url.intended', '');
+        $roleParDefaut = str_contains($intention, 'devenir-vendeur') ? 'vendeur' : 'acheteur';
+
+        return view('auth.inscription', compact('roleParDefaut'));
     }
 
     public function inscrire(Request $r)
@@ -48,6 +53,10 @@ class AuthController extends Controller
             'telephone' => 'required|string|max:20',
             'genre' => 'required|in:particulier,chantier,entreprise',
             'password' => 'required|min:8|confirmed',
+            // Ce que la personne vient faire. Rien ne le demandait : tout compte
+            // naissait acheteur, et une quincaillerie devait ensuite retrouver
+            // seule la porte « Vendez sur FamFer ». L'acteur se décide ici.
+            'role' => 'required|in:acheteur,vendeur',
         ]);
 
         $u = User::create([
@@ -65,10 +74,15 @@ class AuthController extends Controller
         Auth::login($u);
         $r->session()->regenerate();
 
-        // « intended » aussi à l'inscription : une quincaillerie qui a cliqué
-        // sur « Vendre sur FamFer » sans avoir de compte passe par ici, et
-        // doit ressortir sur le formulaire de demande — pas sur le catalogue,
-        // où elle aurait à retrouver la porte par laquelle elle était entrée.
+        // Qui vient vendre part droit au dossier d'établissement. Le laisser
+        // sur le catalogue lui ferait chercher la porte par laquelle il vient
+        // pourtant d'annoncer qu'il entrait.
+        if ($d['role'] === 'vendeur') {
+            return redirect()->route('vendeur.demande')->with('ok',
+                'Bienvenue ' . $u->name . '. Décrivez maintenant votre établissement : '
+                . 'il sera vérifié avant que vos offres n\'apparaissent chez les acheteurs.');
+        }
+
         return redirect()->intended($this->accueilDuRole($u))
             ->with('ok', 'Bienvenue ' . $u->name . '.');
     }

@@ -150,9 +150,12 @@ class ParcoursWebTest extends TestCase
 
     public function test_inscription_et_connexion(): void
     {
+        // « role » est désormais obligatoire : l'inscription demande ce qu'on
+        // vient faire, et c'est là que l'acteur se décide.
         $this->post(route('inscription'), [
             'name' => 'Awa NDIAYE', 'email' => 'awa@chantier.sn', 'telephone' => '+221 77 999 88 77',
             'genre' => 'particulier', 'password' => 'motdepasse', 'password_confirmation' => 'motdepasse',
+            'role' => 'acheteur',
         ])->assertRedirect(route('accueil'));
 
         $this->assertAuthenticated();
