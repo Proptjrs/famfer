@@ -18,7 +18,7 @@
         <div class="carte" style="display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap">
           <div style="flex:0 0 88px;height:88px;background:var(--fond);border-radius:var(--r);
                       display:flex;align-items:center;justify-content:center">
-            @include('partials.dessin', ['dessin' => $p->dessin, 'taille' => 66])
+            @include('partials.image', ['p' => $p, 'taille' => 66])
           </div>
 
           <div style="flex:1 1 200px;min-width:0">

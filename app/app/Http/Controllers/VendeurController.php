@@ -6,8 +6,10 @@ use App\Models\Boutique;
 use App\Models\Categorie;
 use App\Models\Commande;
 use App\Models\LigneCommande;
+use App\Models\PhotoProduit;
 use App\Models\Produit;
 use App\Services\PasseCommande;
+use App\Services\Photos;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -21,7 +23,10 @@ use RuntimeException;
  */
 class VendeurController extends Controller
 {
-    public function __construct(private PasseCommande $passe) {}
+    public function __construct(
+        private PasseCommande $passe,
+        private Photos $photos,
+    ) {}
 
     // ── Ouvrir une boutique ──────────────────────────────────────────────────
 
@@ -102,8 +107,21 @@ class VendeurController extends Controller
 
         return view('vendeur.produits', [
             'boutique' => $b,
-            'produits' => Produit::with('categorie')
+            'produits' => Produit::with('categorie', 'photos')
                 ->where('boutique_id', $b->id)->orderByDesc('id')->paginate(20),
+        ]);
+    }
+
+    /** La fiche d'un produit du vendeur : ses champs, et ses photos. */
+    public function editerProduit(Request $r, Produit $produit)
+    {
+        $this->verifierProduit($r, $produit);
+
+        return view('vendeur.produit', [
+            'boutique' => $this->boutique($r),
+            'produit' => $produit->load('photos'),
+            'categories' => Categorie::whereNotNull('parente_id')
+                ->with('parente')->orderBy('parente_id')->orderBy('rang')->get(),
         ]);
     }
 
@@ -151,6 +169,57 @@ class VendeurController extends Controller
 
         return back()->with('ok', $produit->actif
             ? 'Produit remis en vente.' : 'Produit retiré de la vente.');
+    }
+
+    // ── Les photos ───────────────────────────────────────────────────────────
+
+    /**
+     * Téléverser les photos d'un produit.
+     *
+     * Plusieurs à la fois : un vendeur qui photographie sa marchandise le fait
+     * en une passe, et lui faire recommencer huit fois le formulaire est le
+     * meilleur moyen qu'il n'en mette aucune.
+     */
+    public function televerser(Request $r, Produit $produit)
+    {
+        $this->verifierProduit($r, $produit);
+
+        $r->validate([
+            'photos' => 'required|array|min:1|max:8',
+            'photos.*' => 'required|file',
+        ], [
+            'photos.required' => 'Choisissez au moins une image.',
+        ]);
+
+        $posees = 0;
+        $refus = [];
+
+        foreach ($r->file('photos') as $fichier) {
+            try {
+                $this->photos->ajouter($produit, $fichier);
+                $posees++;
+            } catch (RuntimeException $e) {
+                // Une image refusée n'empêche pas les autres de passer : le
+                // vendeur voit ce qui n'est pas passé et pourquoi.
+                $refus[] = $fichier->getClientOriginalName() . ' — ' . $e->getMessage();
+            }
+        }
+
+        $message = $posees > 0
+            ? $posees . ' photo(s) ajoutée(s).'
+            : 'Aucune photo ajoutée.';
+
+        return $refus === []
+            ? back()->with('ok', $message)
+            : back()->with('erreur', $message . ' ' . implode(' ', $refus));
+    }
+
+    public function supprimerPhoto(Request $r, PhotoProduit $photo)
+    {
+        $this->verifierProduit($r, $photo->produit);
+        $photo->delete();
+
+        return back()->with('ok', 'Photo supprimée.');
     }
 
     // ── Les commandes ────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
 Document de suivi. Il dit ce qui existe réellement dans `app/`, ce qui
 l'éprouve, et ce qui reste.
 
-**Au 3 septembre 2026 : 77 tests, 456 assertions, tous verts sur PostgreSQL.**
+**Au 3 septembre 2026 : 93 tests, 488 assertions, tous verts sur PostgreSQL.**
 
 ---
 
@@ -130,3 +130,42 @@ livraison, rien ne se périme tout seul.
   réels. Rien de ce qui précède ne remplace cette enquête.
 - **Brancher Render** sur le dépôt : voir [03-mise-en-ligne.md](03-mise-en-ligne.md).
 - **Le mémoire lui-même** : problématique, état de l'art, méthodologie.
+
+---
+
+## Les photos des produits
+
+Un produit ne portait qu'une clé de dessin — un tracé vectoriel choisi dans une
+liste. C'est net et léger, mais ce n'est pas la marchandise : un client qui
+achète une tôle veut voir la tôle, pas son schéma.
+
+Les vendeurs téléversent désormais jusqu'à huit photos par produit, la première
+servant de vignette. **Le dessin reste en repli** : un catalogue se remplit peu
+à peu, et sans lui les produits non encore photographiés apparaîtraient comme
+des cadres vides pendant des mois.
+
+C'est la seule porte du site par laquelle un fichier entre, donc la plus
+dangereuse. Trois précautions la gardent :
+
+- **Le type est déduit du contenu, pas du nom.** `getimagesize` lit les
+  dimensions ; ce qui n'est pas une image échoue là, avant d'atteindre le
+  disque. Un fichier appelé `photo.jpg` peut être n'importe quoi.
+- **Le nom est réécrit.** Ni le dossier ni l'extension ne viennent du fichier
+  reçu : un nom fourni par l'extérieur permet de remonter l'arborescence, et une
+  extension fournie par l'extérieur permet de déposer un `.php` dans un dossier
+  servi par le serveur web. `PhotosTest` téléverse `../../evasion.php.jpg` et
+  vérifie que rien de tout cela ne survit au passage.
+- **Le dossier n'exécute rien.** Les fichiers vont dans le disque public de
+  Laravel, servi en statique.
+
+Une image refusée n'empêche pas les autres de passer : le vendeur voit ce qui
+n'est pas passé et pourquoi, plutôt que de recommencer tout le lot.
+
+**Une limite à connaître avant la mise en ligne.** Le disque d'un conteneur est
+éphémère : sur le plan gratuit de Render, les photos téléversées disparaissent
+au redéploiement suivant. Trois issues, par ordre de coût : un disque persistant
+Render (payant), un stockage objet type S3 (le disque `public` se remplace par
+`s3` sans toucher au code), ou accepter la perte le temps du mémoire et
+re-téléverser avant la soutenance.
+
+`PhotosTest` : 16 tests.

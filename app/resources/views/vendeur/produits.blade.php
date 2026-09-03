@@ -26,10 +26,21 @@
       </tr>
       @foreach($produits as $p)
         <tr>
-          <td>
-            <a href="{{ route('produit', $p) }}" style="font-weight:600">{{ $p->nom }}</a>
+          <td style="display:flex;gap:10px;align-items:center">
+            {{-- La vignette dans la liste : c'est ce qui fait voir d'un coup
+                 d'œil quels produits n'ont pas encore de photo. --}}
+            <span style="flex:0 0 44px;height:44px;background:var(--fond);border-radius:var(--r);
+                         display:flex;align-items:center;justify-content:center;overflow:hidden">
+              @include('partials.image', ['p' => $p, 'taille' => 34])
+            </span>
+            <span>
+            <a href="{{ route('vendeur.produit.editer', $p) }}" style="font-weight:600">{{ $p->nom }}</a>
             @unless($p->actif)<span class="etiq etiq-gris">retiré</span>@endunless
             @if($p->remise())<span class="etiq etiq-orange">−{{ $p->remise() }} %</span>@endif
+            @if($p->photos->isEmpty())
+              <br><span style="color:var(--orange-fonce);font-size:.78rem">sans photo</span>
+            @endif
+            </span>
           </td>
           <td style="color:var(--gris)">{{ $p->categorie->nom }}</td>
           <td class="mono" style="text-align:right">
@@ -47,6 +58,8 @@
           <td style="text-align:right;white-space:nowrap">
             {{-- Retirer plutôt que supprimer : effacer le produit emporterait
                  les lignes de commande qui le désignent, donc l'historique. --}}
+            <a href="{{ route('vendeur.produit.editer', $p) }}"
+               class="btn btn-sm btn-clair">Modifier</a>
             <form method="POST" action="{{ route('vendeur.produit.bascule', $p) }}"
                   style="display:inline">
               @csrf

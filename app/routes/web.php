@@ -80,7 +80,12 @@ Route::middleware('auth')->prefix('vendeur')->name('vendeur.')->group(function (
     Route::get('/produits', [VendeurController::class, 'produits'])->name('produits');
     Route::get('/produits/nouveau', [VendeurController::class, 'nouveauProduit'])->name('produit.nouveau');
     Route::post('/produits', [VendeurController::class, 'publier'])->name('produit.publier');
+    Route::get('/produit/{produit}', [VendeurController::class, 'editerProduit'])->name('produit.editer');
     Route::put('/produit/{produit}', [VendeurController::class, 'modifier'])->name('produit.modifier');
+    Route::post('/produit/{produit}/photos', [VendeurController::class, 'televerser'])
+        ->name('produit.photos');
+    Route::delete('/photo/{photo}', [VendeurController::class, 'supprimerPhoto'])
+        ->name('photo.supprimer');
     Route::post('/produit/{produit}/bascule', [VendeurController::class, 'basculer'])->name('produit.bascule');
 
     Route::get('/commandes', [VendeurController::class, 'commandes'])->name('commandes');

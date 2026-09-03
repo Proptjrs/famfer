@@ -13,7 +13,7 @@
   @endif
 
   <div class="image">
-    @include('partials.dessin', ['dessin' => $p->dessin, 'taille' => 96])
+    @include('partials.image', ['p' => $p, 'taille' => 96])
   </div>
 
   <div class="nom">{{ $p->nom }}</div>

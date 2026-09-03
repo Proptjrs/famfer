@@ -15,7 +15,7 @@
   <div class="carte" style="flex:0 0 340px">
     <div style="aspect-ratio:1;background:var(--fond);border-radius:var(--r);
                 display:flex;align-items:center;justify-content:center">
-      @include('partials.dessin', ['dessin' => $produit->dessin, 'taille' => 220])
+      @include('partials.image', ['p' => $produit, 'taille' => 220])
     </div>
   </div>
 

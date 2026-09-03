@@ -44,6 +44,10 @@ if [ "${DONNEES_DEMO}" = "true" ]; then
     php artisan db:seed --class=ClientsSeeder --force
 fi
 
+# Le lien qui rend « storage/app/public » servable par nginx. Sans lui, les
+# photos téléversées existent sur le disque et ne s'affichent nulle part.
+php artisan storage:link --force
+
 # Ces caches se reconstruisent à chaque déploiement, jamais à la main : un cache
 # figé sur l'ancienne configuration est une panne difficile à voir.
 php artisan config:cache

@@ -16,7 +16,9 @@ FROM php:8.3-fpm-alpine
 # opcache parce qu'un serveur qui recompile le PHP à chaque requête gaspille.
 # « gettext » fournit envsubst, qui pose le port dans la configuration nginx.
 RUN apk add --no-cache postgresql-dev icu-dev nginx supervisor gettext \
-    && docker-php-ext-install pdo_pgsql intl opcache \
+        libpng-dev libjpeg-turbo-dev freetype-dev \
+    && docker-php-ext-configure gd --with-jpeg --with-freetype \
+    && docker-php-ext-install pdo_pgsql intl opcache gd \
     && rm -rf /var/cache/apk/*
 
 WORKDIR /var/www

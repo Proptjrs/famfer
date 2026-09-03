@@ -42,6 +42,25 @@ class Produit extends Model
         return $this->hasMany(Avis::class);
     }
 
+    public function photos(): HasMany
+    {
+        return $this->hasMany(PhotoProduit::class)->orderBy('rang')->orderBy('id');
+    }
+
+    /**
+     * La vignette : la première photo, ou rien.
+     *
+     * Les vues se rabattent sur le dessin vectoriel quand il n'y a pas de
+     * photo. Un catalogue à moitié photographié vaut mieux qu'un catalogue où
+     * les produits sans photo apparaissent comme des cadres vides.
+     */
+    public function vignette(): ?PhotoProduit
+    {
+        return $this->relationLoaded('photos')
+            ? $this->photos->first()
+            : $this->photos()->first();
+    }
+
     /** Le pourcentage de remise, ou null s'il n'y en a pas. */
     public function remise(): ?int
     {

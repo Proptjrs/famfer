@@ -49,9 +49,13 @@
                       border-bottom:1px solid var(--bord);flex-wrap:wrap">
             <div style="flex:0 0 60px;height:60px;background:var(--fond);border-radius:var(--r);
                         display:flex;align-items:center;justify-content:center">
-              @include('partials.dessin', [
-                'dessin' => $ligne->produit?->dessin ?? 'defaut', 'taille' => 46,
-              ])
+              {{-- Le produit a pu être retiré depuis : on retombe sur le
+                   dessin plutôt que d'afficher un cadre vide. --}}
+              @if($ligne->produit)
+                @include('partials.image', ['p' => $ligne->produit, 'taille' => 46])
+              @else
+                @include('partials.dessin', ['dessin' => 'defaut', 'taille' => 46])
+              @endif
             </div>
             <div style="flex:1 1 180px;min-width:0">
               <div style="font-weight:600">{{ $ligne->nom_produit }}</div>
