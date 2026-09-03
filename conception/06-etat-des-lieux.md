@@ -3,7 +3,7 @@
 Document de suivi, tenu à jour au fur et à mesure. Il dit ce qui existe
 réellement dans `app/`, ce qui l'éprouve, et ce qui reste.
 
-**Au 2 septembre 2026 : 138 tests, 681 assertions, tous verts sur PostgreSQL.**
+**Au 3 septembre 2026 : 146 tests, 707 assertions, tous verts sur PostgreSQL.**
 
 ---
 
@@ -289,3 +289,45 @@ dans le dépôt, seul `.env.example` y figure, et il est vide de valeurs.
 - **Le terrain.** Deux ou trois quincailliers, deux chefs de chantier, les prix
   réels du marché.
 - **Le mémoire lui-même** : problématique, état de l'art, méthodologie.
+
+---
+
+## Le rôle porté par un compte, et ce que la plateforme prélève
+
+Deux manques que la relecture des parcours a fait apparaître.
+
+**Rien n'indiquait à un utilisateur ce qu'il était.** Acheteur, vendeur en
+attente de vérification, commerçant vérifié, administration : il fallait le
+deviner à la présence d'un lien dans la barre du haut. La page du compte porte
+maintenant un bloc « Mon rôle sur FamFer » qui l'annonce, et surtout qui donne
+la suite : déposer une demande quand on n'est qu'acheteur, préparer ses offres
+pendant la vérification, le motif quand la maison est suspendue.
+
+**Un vendeur ne voyait nulle part ce que FamFer retenait sur ses ventes.** La
+plateforme encaisse à sa place et garde une commission ; ne pas la lui montrer,
+c'est lui demander une confiance qu'on ne lui rend pas. Le partage est
+désormais affiché en trois lignes, sur sa page d'argent comme sur son compte :
+
+| | |
+|---|---|
+| Vos ventes abouties | le brut, tout compris |
+| Commission FamFer, 8 % | **sur la marchandise seule, jamais sur la livraison** |
+| Ce qui vous revient | le net, frais de livraison inclus — ils sont à lui |
+
+Avec ce que la page promet, et que le code tient : rien à l'inscription, rien à
+la publication d'une offre, et la commission due seulement une fois la commande
+reçue — une vente annulée, expirée ou remboursée ne coûte rien.
+
+`RoleEtCommissionTest` n'éprouve pas la mise en page mais le chiffre : la
+commission affichée est comparée à celle du grand livre, le brut moins la
+commission doit tomber sur le net, une vente annulée doit afficher zéro, et les
+deux pages doivent dire la même chose. Une page qui annoncerait une commission
+calculée autrement que celle réellement prélevée serait pire que pas de page.
+
+**Au 3 septembre 2026 : 146 tests, 707 assertions.**
+
+## Le dépôt est en ligne
+
+<https://github.com/Proptjrs/famfer> — branche `principale`, suivi réglé, local
+et distant identiques. Reste à brancher Render dessus : voir
+[07-mise-en-ligne.md](07-mise-en-ligne.md).

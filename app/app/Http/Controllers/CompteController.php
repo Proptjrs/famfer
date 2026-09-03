@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Acheteur;
+use App\Services\PilotageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -17,11 +18,22 @@ use Illuminate\Validation\Rules\Password;
  */
 class CompteController extends Controller
 {
+    public function __construct(private PilotageService $pilotage) {}
+
     public function profil(Request $r)
     {
+        $u = $r->user();
+
         return view('compte.profil', [
-            'utilisateur' => $r->user(),
-            'acheteur' => $r->user()->acheteur,
+            'utilisateur' => $u,
+            'acheteur' => $u->acheteur,
+            'vendeur' => $u->vendeur,
+            // Ce que la plateforme a prélevé sur ce compte depuis qu'il vend.
+            // Un vendeur à qui l'on retient une commission a le droit de savoir
+            // combien, sans avoir à additionner ses commandes lui-même.
+            'commission' => $u->vendeur
+                ? $this->pilotage->pourVendeur($u->vendeur, 3650)
+                : null,
         ]);
     }
 

@@ -255,6 +255,9 @@ class VendeurController extends Controller
             'litiges' => $this->reversements->litigesOuverts($v),
             'aSolder' => Commande::where('vendeur_id', $v->id)
                 ->where('etat', 'receptionnee')->count(),
+            // Le partage entre ce qui revient au vendeur et ce que la
+            // plateforme prélève, sur trente jours.
+            'chiffres' => $this->pilotage->pourVendeur($v),
         ]);
     }
 

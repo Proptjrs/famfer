@@ -33,6 +33,48 @@
   </div>
 </div>
 
+{{-- Le partage, dit sans détour. Une place de marché qui retient l'argent de
+     ses commerçants et ne leur montre pas ce qu'elle prélève leur demande une
+     confiance qu'elle ne rend pas. --}}
+<h2>Ce que FamFer prélève — {{ $chiffres['periode_jours'] }} derniers jours</h2>
+<div class="carte tableau-large" style="margin-bottom:26px"><table>
+  <tr>
+    <td>Vos ventes abouties</td>
+    <td class="mono" style="text-align:right">
+      {{ number_format($chiffres['chiffre_affaires'], 0, ',', ' ') }} F
+    </td>
+    <td style="color:var(--gris);font-size:.86rem">
+      {{ $chiffres['commandes_soldees'] }} commande(s) reçue(s) et soldée(s)
+    </td>
+  </tr>
+  <tr>
+    <td style="color:var(--forge)">
+      Commission FamFer · {{ $vendeur->taux_commission_pour_mille / 10 }} %
+    </td>
+    <td class="mono" style="text-align:right;color:var(--forge)">
+      − {{ number_format($chiffres['commission_versee'], 0, ',', ' ') }} F
+    </td>
+    <td style="color:var(--gris);font-size:.86rem">
+      Sur la marchandise seule — jamais sur les frais de livraison
+    </td>
+  </tr>
+  <tr style="border-top:2px solid var(--bord)">
+    <td><strong>Ce qui vous revient</strong></td>
+    <td class="mono" style="text-align:right"><strong>
+      {{ number_format($chiffres['net_percu'], 0, ',', ' ') }} F
+    </strong></td>
+    <td style="color:var(--gris);font-size:.86rem">
+      Frais de livraison compris, ils sont à vous
+    </td>
+  </tr>
+</table></div>
+
+<p style="color:var(--gris);font-size:.86rem;margin:-14px 0 26px;max-width:72ch">
+  Rien n'est prélevé à l'inscription ni à la publication d'une offre, et la
+  commission n'est due qu'une fois la commande reçue par l'acheteur : une vente
+  annulée, expirée ou remboursée ne vous coûte rien.
+</p>
+
 <form method="POST" action="{{ route('vendeur.reversement') }}" class="carte" style="margin-bottom:26px">
   @csrf
   <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
