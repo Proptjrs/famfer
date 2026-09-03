@@ -9,7 +9,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Une catégorie du catalogue. Deux niveaux : rayon, puis sous-rayon. */
 class Categorie extends Model
 {
-    protected $fillable = ['parente_id', 'nom', 'slug', 'icone', 'rang'];
+    protected $fillable = [
+        'parente_id', 'nom', 'slug', 'icone', 'rang',
+        'image', 'image_auteur', 'image_licence', 'image_source',
+    ];
+
+    /** L'adresse publique de l'illustration, ou rien. */
+    public function urlImage(): ?string
+    {
+        return $this->image
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->image)
+            : null;
+    }
 
     public function parente(): BelongsTo
     {

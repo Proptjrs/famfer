@@ -7,29 +7,27 @@ use App\Models\Categorie;
 use App\Models\Produit;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
  * Le catalogue de démonstration : rayons, boutiques, produits.
  *
- * Les prix sont ceux du marché dakarois à la mi-2026, relevés en boutique.
- * Ils comptent : une démonstration où un fer à béton vaut 300 francs ne
- * convainc personne dans ce pays.
+ * Les références viennent du catalogue fourni par le client — 689 produits,
+ * 14 rayons, 57 sous-rayons — repris tels quels dans
+ * « donnees/catalogue.php ». Les prix y sont indicatifs et dérivés du nom :
+ * stables d'un semis à l'autre, mais à remplacer par de vrais relevés avant
+ * toute mise en service.
+ *
+ * Chaque boutique ne tient pas tout le catalogue : c'est ce qui donne son
+ * intérêt à la comparaison des prix, et ce qui rend la place de marché
+ * différente d'une boutique en ligne.
  */
 class CatalogueSeeder extends Seeder
 {
-    /** Rayon => [sous-rayons], avec l'icône du rayon. */
-    private const RAYONS = [
-        'Fer à béton' => ['icone' => 'beton', 'sous' => ['Fer haute adhérence', 'Ronds lisses']],
-        'Tôles' => ['icone' => 'tole', 'sous' => ['Tôles bac', 'Tôles ondulées', 'Tôles planes']],
-        'Tubes et profilés' => ['icone' => 'tube', 'sous' => ['Cornières', 'Tubes', 'Profilés']],
-        'Treillis et fils' => ['icone' => 'treillis', 'sous' => ['Treillis soudés', 'Fils et grillages']],
-        'Quincaillerie' => ['icone' => 'quincaillerie', 'sous' => ['Visserie', 'Serrurerie']],
-        'Outillage et soudure' => ['icone' => 'outillage', 'sous' => ['Outils à main', 'Soudure']],
-        'Pièces détachées' => ['icone' => 'piece', 'sous' => ['Roulements', 'Transmission']],
-    ];
+    private ?array $images = null;
 
-    /** nom, ville, officielle, remise appliquée sur le prix de référence. */
+    /** nom, ville, boutique officielle, écart de prix appliqué. */
     private const BOUTIQUES = [
         ['Quincaillerie Ndiaye & Frères', 'Pikine', true, 1.00],
         ['Établissements Sow Métaux', 'Guédiawaye', true, 0.94],
@@ -37,94 +35,22 @@ class CatalogueSeeder extends Seeder
         ['Fer Express Thiaroye', 'Thiaroye', false, 0.98],
     ];
 
-    /**
-     * sous-rayon => [nom, marque, prix de référence, dessin, prix barré ?]
-     *
-     * Le prix barré n'est posé que là où une remise se justifie : l'afficher
-     * partout le viderait de son sens.
-     */
-    private const PRODUITS = [
-        'Fer haute adhérence' => [
-            ['Fer à béton HA T6 — barre de 12 m', 'SENIRON', 2_100, 'rond-strie', 2_600],
-            ['Fer à béton HA T8 — barre de 12 m', 'SENIRON', 3_600, 'rond-strie', null],
-            ['Fer à béton HA T10 — barre de 12 m', 'SENIRON', 5_600, 'rond-strie', 6_900],
-            ['Fer à béton HA T12 — barre de 12 m', 'SENIRON', 8_100, 'rond-strie', null],
-            ['Fer à béton HA T14 — barre de 12 m', 'AFRIMETAL', 11_000, 'rond-strie', null],
-            ['Fer à béton HA T16 — barre de 12 m', 'AFRIMETAL', 14_400, 'rond-strie', 17_500],
-            ['Fer à béton HA T20 — barre de 12 m', 'AFRIMETAL', 22_500, 'rond-strie', null],
-            ['Fer à béton HA T25 — barre de 12 m', 'AFRIMETAL', 35_200, 'rond-strie', null],
-        ],
-        'Ronds lisses' => [
-            ['Rond lisse Ø6 — barre de 12 m', 'SENIRON', 1_900, 'rond-lisse', null],
-            ['Rond lisse Ø8 — barre de 12 m', 'SENIRON', 3_300, 'rond-lisse', 3_900],
-            ['Rond lisse Ø10 — barre de 12 m', 'SENIRON', 5_100, 'rond-lisse', null],
-        ],
-        'Tôles bac' => [
-            ['Tôle bac alu-zinc 6 m — 30/100', 'ALUZINC', 14_500, 'tole-bac', 18_000],
-            ['Tôle bac alu-zinc 4 m — 30/100', 'ALUZINC', 9_800, 'tole-bac', null],
-            ['Tôle bac alu-zinc 6 m — 35/100', 'ALUZINC', 17_200, 'tole-bac', null],
-        ],
-        'Tôles ondulées' => [
-            ['Tôle ondulée galvanisée 3 m', 'GALVA', 6_400, 'tole-ondulee', 7_800],
-            ['Tôle ondulée galvanisée 4 m', 'GALVA', 8_500, 'tole-ondulee', null],
-        ],
-        'Tôles planes' => [
-            ['Tôle plane noire 2 × 1 m — 2 mm', 'AFRIMETAL', 19_500, 'tole-plane', null],
-            ['Tôle larmée 2 × 1 m — 3 mm', 'AFRIMETAL', 32_000, 'tole-larmee', 38_000],
-        ],
-        'Cornières' => [
-            ['Cornière 30 × 30 × 3 — 6 m', 'AFRIMETAL', 6_800, 'corniere', null],
-            ['Cornière 40 × 40 × 4 — 6 m', 'AFRIMETAL', 9_200, 'corniere', 11_000],
-            ['Cornière 50 × 50 × 5 — 6 m', 'AFRIMETAL', 14_300, 'corniere', null],
-        ],
-        'Tubes' => [
-            ['Tube carré 40 × 40 × 2 — 6 m', 'SENIRON', 9_100, 'tube-carre', null],
-            ['Tube carré 50 × 50 × 2 — 6 m', 'SENIRON', 11_600, 'tube-carre', 13_900],
-            ['Tube rectangulaire 60 × 40 × 2 — 6 m', 'SENIRON', 12_400, 'tube-rect', null],
-            ['Tube rond Ø42 × 2 — 6 m', 'SENIRON', 8_900, 'tube-rond', null],
-        ],
-        'Profilés' => [
-            ['Fer plat 40 × 5 — 6 m', 'AFRIMETAL', 7_300, 'fer-plat', null],
-            ['UPN 80 — 6 m', 'AFRIMETAL', 28_500, 'upn', null],
-            ['IPN 100 — 6 m', 'AFRIMETAL', 34_000, 'ipn', 41_000],
-        ],
-        'Treillis soudés' => [
-            ['Treillis soudé ST25 — 2,4 × 6 m', 'GALVA', 18_900, 'treillis', 23_000],
-            ['Treillis soudé ST15 — 2,4 × 6 m', 'GALVA', 13_600, 'treillis', null],
-        ],
-        'Fils et grillages' => [
-            ['Fil recuit — rouleau de 25 kg', 'GALVA', 16_500, 'fil', null],
-            ['Grillage galvanisé 1,5 m — rouleau 25 m', 'GALVA', 24_000, 'grillage', 29_000],
-        ],
-        'Visserie' => [
-            ['Pointes 70 mm — boîte de 5 kg', 'SENFIX', 4_200, 'clou', null],
-            ['Vis à bois 5 × 60 — boîte de 200', 'SENFIX', 3_800, 'vis', 4_600],
-            ['Boulons M10 × 80 — boîte de 100', 'SENFIX', 9_500, 'boulon', null],
-            ['Chevilles à frapper 8 × 60 — boîte de 100', 'SENFIX', 5_400, 'cheville', null],
-        ],
-        'Serrurerie' => [
-            ['Cadenas laiton 50 mm', 'SENFIX', 3_500, 'cadenas', 4_500],
-            ['Charnière acier 100 mm — la paire', 'SENFIX', 2_800, 'charniere', null],
-        ],
-        'Outils à main' => [
-            ['Brouette de chantier 100 L', 'BATIPRO', 27_500, 'brouette', 34_000],
-            ['Pelle ronde manche bois', 'BATIPRO', 6_200, 'pelle', null],
-            ['Truelle langue de chat 200 mm', 'BATIPRO', 3_400, 'truelle', null],
-            ['Marteau de coffreur 600 g', 'BATIPRO', 7_800, 'marteau', null],
-        ],
-        'Soudure' => [
-            ['Électrodes rutiles 2,5 mm — paquet de 5 kg', 'SOUDAF', 8_900, 'electrode', 10_500],
-            ['Disque à tronçonner 230 mm — lot de 10', 'SOUDAF', 11_200, 'disque', null],
-        ],
-        'Roulements' => [
-            ['Roulement à billes 6204 2RS', 'MECAPRO', 4_600, 'roulement', null],
-            ['Roulement à billes 6206 2RS', 'MECAPRO', 7_300, 'roulement', 8_900],
-        ],
-        'Transmission' => [
-            ['Courroie trapézoïdale A-40', 'MECAPRO', 5_200, 'courroie', null],
-            ['Chaîne à rouleaux 08B — 1 m', 'MECAPRO', 9_800, 'chaine', null],
-            ['Poulie fonte Ø120 — 1 gorge', 'MECAPRO', 12_400, 'poulie', null],
-        ],
+    /** Les marques attribuées par rayon, pour que le filtre serve à quelque chose. */
+    private const MARQUES = [
+        'Fer et métallerie' => ['SENIRON', 'AFRIMETAL', 'GALVA'],
+        'Quincaillerie' => ['SENFIX', 'AFRIMETAL'],
+        'Outillage à main' => ['BATIPRO', 'SENFIX'],
+        'Outillage électrique' => ['BATIPRO', 'MECAPRO'],
+        'Soudure et découpe' => ['SOUDAF', 'BATIPRO'],
+        'Peinture et colles' => ['COLORSEN', 'SOUDAF'],
+        'Plomberie' => ['AQUASEN', 'SENFIX'],
+        'Électricité' => ['ELECSEN', 'AQUASEN'],
+        'Pièces auto' => ['MECAPRO', 'AFRIMETAL'],
+        'Pièces machines' => ['MECAPRO'],
+        'Agriculture' => ['BATIPRO', 'AQUASEN'],
+        'Portes et portails' => ['SENFIX', 'AFRIMETAL'],
+        'Protection (EPI)' => ['SECURSEN', 'BATIPRO'],
+        'Consommables' => ['SENFIX', 'COLORSEN'],
     ];
 
     public function run(): void
@@ -135,24 +61,24 @@ class CatalogueSeeder extends Seeder
             return;
         }
 
-        // ── Les rayons ───────────────────────────────────────────────────────
-        $sousRayons = [];
-        foreach (array_values(array_keys(self::RAYONS)) as $rang => $nom) {
-            $rayon = Categorie::create([
-                'nom' => $nom, 'slug' => Str::slug($nom),
-                'icone' => self::RAYONS[$nom]['icone'], 'rang' => $rang,
-            ]);
+        $catalogue = require database_path('seeders/donnees/catalogue.php');
 
-            foreach (self::RAYONS[$nom]['sous'] as $r => $sous) {
-                $sousRayons[$sous] = Categorie::create([
-                    'parente_id' => $rayon->id, 'nom' => $sous,
-                    'slug' => Str::slug($sous), 'rang' => $r,
-                ]);
-            }
-        }
+        $boutiques = $this->poserLesBoutiques();
+        [$rayons, $sousRayons] = $this->poserLesRayons($catalogue);
 
-        // ── Les boutiques ────────────────────────────────────────────────────
+        $poses = $this->poserLesProduits($catalogue, $rayons, $sousRayons, $boutiques);
+
+        $this->command?->info(sprintf(
+            '%d rayons, %d sous-rayons, %d boutiques, %d produits en vente.',
+            count($rayons), count($sousRayons), count($boutiques), $poses
+        ));
+    }
+
+    /** @return array<int, array{modele: Boutique, ecart: float}> */
+    private function poserLesBoutiques(): array
+    {
         $boutiques = [];
+
         foreach (self::BOUTIQUES as $i => [$nom, $ville, $officielle, $ecart]) {
             $utilisateur = User::create([
                 'name' => $nom,
@@ -165,13 +91,15 @@ class CatalogueSeeder extends Seeder
             $boutiques[] = [
                 'modele' => Boutique::create([
                     'utilisateur_id' => $utilisateur->id,
-                    'nom' => $nom, 'slug' => Str::slug($nom),
-                    'description' => 'Fer, tôles et quincaillerie. Livraison sur tout le Sénégal.',
+                    'nom' => $nom,
+                    'slug' => Str::slug($nom),
+                    'description' => 'Fer, tôles, quincaillerie et outillage. '
+                        . 'Livraison sur tout le Sénégal.',
                     'telephone' => $utilisateur->telephone,
                     'adresse' => 'Marché central, ' . $ville,
                     'ville' => $ville,
                     'officielle' => $officielle,
-                    // La dernière n'est pas encore validée : la démonstration a
+                    // La dernière attend sa validation : la démonstration a
                     // besoin d'un dossier en attente à montrer.
                     'statut' => $i === 3 ? 'en_attente' : 'active',
                 ]),
@@ -179,42 +107,146 @@ class CatalogueSeeder extends Seeder
             ];
         }
 
-        // ── Les produits ─────────────────────────────────────────────────────
+        return $boutiques;
+    }
+
+    /** @return array{0: array<string, Categorie>, 1: array<string, Categorie>} */
+    private function poserLesRayons(array $catalogue): array
+    {
+        $rayons = [];
+        $sousRayons = [];
+        $rang = 0;
+
+        foreach ($catalogue as $nom => $bloc) {
+            $rayon = Categorie::create([
+                'nom' => $nom,
+                'slug' => Str::slug($nom),
+                'icone' => $bloc['icone'],
+                'rang' => $rang++,
+            ]);
+            $rayons[$nom] = $rayon;
+
+            $sousRang = 0;
+            foreach (array_keys($bloc['sous']) as $sous) {
+                // Deux rayons peuvent porter un sous-rayon du même nom —
+                // « Accessoires », « Protection », « Quincaillerie ». La clé
+                // les distingue, et le slug porte celui du rayon.
+                $sousRayons[$nom . '|' . $sous] = Categorie::create([
+                    'parente_id' => $rayon->id,
+                    'nom' => $sous,
+                    'slug' => Str::slug($nom . '-' . $sous),
+                    'rang' => $sousRang++,
+                ] + $this->illustration($sous));
+            }
+        }
+
+        return [$rayons, $sousRayons];
+    }
+
+    private function poserLesProduits(
+        array $catalogue, array $rayons, array $sousRayons, array $boutiques
+    ): int {
+        $lignes = [];
+        $maintenant = now();
         $poses = 0;
-        foreach (self::PRODUITS as $sousRayon => $articles) {
-            foreach ($articles as $rang => [$nom, $marque, $prix, $dessin, $barre]) {
-                // Chaque boutique ne tient pas tout : c'est ce qui donne son
-                // intérêt à comparer.
-                foreach ($boutiques as $b => $boutique) {
-                    if (($rang + $b) % 3 === 2) {
-                        continue;
+
+        foreach ($catalogue as $nomRayon => $bloc) {
+            $marques = self::MARQUES[$nomRayon] ?? ['SENFIX'];
+
+            foreach ($bloc['sous'] as $nomSous => $produits) {
+                $categorie = $sousRayons[$nomRayon . '|' . $nomSous];
+
+                foreach ($produits as $rang => [$nom, $prixBase, $dessin]) {
+                    foreach ($boutiques as $b => $boutique) {
+                        // Deux boutiques sur trois tiennent chaque article :
+                        // assez pour comparer, pas assez pour que tout le monde
+                        // ait tout.
+                        if (($rang + $b) % 3 === 2) {
+                            continue;
+                        }
+
+                        $prix = $this->arrondir($prixBase * $boutique['ecart']);
+
+                        // Une remise sur un article sur cinq, et seulement là :
+                        // un prix barré partout ne veut plus rien dire.
+                        $barre = ($rang + $b) % 5 === 0
+                            ? $this->arrondir($prix * 1.22)
+                            : null;
+
+                        $lignes[] = [
+                            'boutique_id' => $boutique['modele']->id,
+                            'categorie_id' => $categorie->id,
+                            'nom' => $nom,
+                            // La catégorie entre dans la clé : « Porte-embout »
+                            // existe dans deux sous-rayons, et le seul nom ne
+                            // suffit donc pas à distinguer les deux fiches.
+                            'slug' => Str::slug($nom) . '-' . $boutique['modele']->id
+                                . '-' . substr(md5($nom . $categorie->id . $b), 0, 6),
+                            'description' => $nom . ' — qualité contrôlée, disponible '
+                                . 'en magasin et en livraison.',
+                            'marque' => $marques[($rang + $b) % count($marques)],
+                            'prix' => $prix,
+                            'prix_barre' => $barre,
+                            // Une rupture de temps en temps : un catalogue où
+                            // tout est en stock ne ressemble à aucun magasin.
+                            'stock' => ($rang * 7 + $b * 13) % 17 === 0
+                                ? 0
+                                : 4 + ($rang * 11 + $b * 23) % 80,
+                            'dessin' => $dessin,
+                            'actif' => true,
+                            'nombre_ventes' => ($rang * 11 + $b * 17) % 40,
+                            'created_at' => $maintenant,
+                            'updated_at' => $maintenant,
+                        ];
+                        $poses++;
                     }
-
-                    $ecart = $boutique['ecart'];
-                    $arrondi = fn ($v) => max(100, (int) round($v / 100) * 100);
-
-                    Produit::create([
-                        'boutique_id' => $boutique['modele']->id,
-                        'categorie_id' => $sousRayons[$sousRayon]->id,
-                        'nom' => $nom,
-                        'slug' => Str::slug($nom) . '-' . $boutique['modele']->id,
-                        'description' => $nom . ' — qualité contrôlée, disponible en magasin '
-                            . 'et en livraison.',
-                        'marque' => $marque,
-                        'prix' => $arrondi($prix * $ecart),
-                        'prix_barre' => $barre ? $arrondi($barre * $ecart) : null,
-                        'stock' => 12 + ($rang * 7 + $b * 13) % 90,
-                        'dessin' => $dessin,
-                        'nombre_ventes' => ($rang * 11 + $b * 17) % 40,
-                    ]);
-                    $poses++;
                 }
             }
         }
 
-        $this->command?->info(sprintf(
-            '%d rayons, %d sous-rayons, %d boutiques, %d produits.',
-            count(self::RAYONS), count($sousRayons), count($boutiques), $poses
-        ));
+        // Insertion par paquets : deux mille appels à « create » prendraient
+        // plusieurs minutes, et le semis doit rester relançable sans y penser.
+        foreach (array_chunk($lignes, 500) as $paquet) {
+            DB::table('produits')->insert($paquet);
+        }
+
+        return $poses;
+    }
+
+    /**
+     * L'illustration d'un sous-rayon, avec son attribution.
+     *
+     * Les images viennent de Wikimedia Commons, sous licence CC BY, CC BY-SA,
+     * CC0 ou domaine public. L'auteur, la licence et la page d'origine sont
+     * enregistrés avec elles : les citer est une obligation de ces licences,
+     * pas une politesse. Deux sous-rayons n'ont rien trouvé de libre et
+     * restent sans image — le dessin au trait y tient la place.
+     */
+    private function illustration(string $sousRayon): array
+    {
+        $index = $this->images ??= json_decode(
+            file_get_contents(database_path('seeders/donnees/images.json')), true
+        );
+
+        foreach ($index as $entree) {
+            if ($entree['sous_rayon'] === $sousRayon) {
+                return [
+                    'image' => $entree['fichier'],
+                    'image_auteur' => Str::limit($entree['auteur'], 155, ''),
+                    'image_licence' => $entree['licence'],
+                    'image_source' => $entree['source'],
+                ];
+            }
+        }
+
+        return [];
+    }
+
+    /** Personne n'affiche 14 387 F : on arrondit comme au comptoir. */
+    private function arrondir(float $montant): int
+    {
+        $pas = $montant >= 50_000 ? 1_000 : ($montant >= 10_000 ? 500 : 100);
+
+        return max($pas, (int) round($montant / $pas) * $pas);
     }
 }

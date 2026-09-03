@@ -1,0 +1,442 @@
+{
+ "barres-et-profiles": {
+  "sous_rayon": "Barres et profilés",
+  "fichier": "rayons/barres-et-profiles.jpg",
+  "titre": "File:A bunch of rebar.jpg",
+  "auteur": "W.carter",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:A_bunch_of_rebar.jpg"
+ },
+ "toles": {
+  "sous_rayon": "Tôles",
+  "fichier": "rayons/toles.jpg",
+  "titre": "File:Aviation Structual Mechanic S (Structures) 2nd Class Ralph Scott slides a section of sheet metal into a power shear in an Aircraft Intermediate Maintenance Department (AIMD) shop - DPLA - 71c37b59a948d940223fdabf3ca9a384.jpeg",
+  "auteur": "Department of Defense. American Forces Information Service. Defense Visual Information Center. 1994",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Aviation_Structual_Mechanic_S_(Structures)_2nd_Class_Ralph_Scott_slides_a_section_of_sheet_metal_into_a_power_shear_in_an_Aircraft_Intermediate_Maintenance_Department_(AIMD)_shop_-_DPLA_-_71c37b59a948d940223fdabf3ca9a384.jpeg"
+ },
+ "visserie": {
+  "sous_rayon": "Visserie",
+  "fichier": "rayons/visserie.jpg",
+  "titre": "File:94147 moshe beril at work in the screw factory PikiWiki Israel.jpg",
+  "auteur": "משה דנגור",
+  "licence": "CC BY 2.5",
+  "source": "https://commons.wikimedia.org/wiki/File:94147_moshe_beril_at_work_in_the_screw_factory_PikiWiki_Israel.jpg"
+ },
+ "boulonnerie": {
+  "sous_rayon": "Boulonnerie",
+  "fichier": "rayons/boulonnerie.jpg",
+  "titre": "File:Aurora, Oregon - Aurora Mills Architectural Salvage - Dorman bolt and nut boxes.jpg",
+  "auteur": "Joe Mabel",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Aurora,_Oregon_-_Aurora_Mills_Architectural_Salvage_-_Dorman_bolt_and_nut_boxes.jpg"
+ },
+ "fixations": {
+  "sous_rayon": "Fixations",
+  "fichier": "rayons/fixations.jpg",
+  "titre": "File:Wall plugs plastic.jpg",
+  "auteur": "Rawlplug/Joanna Korzeniewska-Wieczorek",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Wall_plugs_plastic.jpg"
+ },
+ "serrurerie": {
+  "sous_rayon": "Serrurerie",
+  "fichier": "rayons/serrurerie.jpg",
+  "titre": "File:15mm Boss Padlocks Vorhangschloss.JPG",
+  "auteur": "Nxr-at",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:15mm_Boss_Padlocks_Vorhangschloss.JPG"
+ },
+ "charnieres-et-accessoires": {
+  "sous_rayon": "Charnières et accessoires",
+  "fichier": "rayons/charnieres-et-accessoires.jpg",
+  "titre": "File:Closet Door Hinge, Soft-Close (46195408205).jpg",
+  "auteur": "Tony Webster from Minneapolis, Minnesota, United States",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Closet_Door_Hinge,_Soft-Close_(46195408205).jpg"
+ },
+ "frappe": {
+  "sous_rayon": "Frappe",
+  "fichier": "rayons/frappe.jpg",
+  "titre": "File:Broken hammer DIY.jpg",
+  "auteur": "Lorax",
+  "licence": "CC BY 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Broken_hammer_DIY.jpg"
+ },
+ "tournevis-et-embouts": {
+  "sous_rayon": "Tournevis et embouts",
+  "fichier": "rayons/tournevis-et-embouts.jpg",
+  "titre": "File:Black screwdriver.png",
+  "auteur": "多多123",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Black_screwdriver.png"
+ },
+ "cles": {
+  "sous_rayon": "Clés",
+  "fichier": "rayons/cles.jpg",
+  "titre": "File:Antique curved wrenches (49172062197).jpg",
+  "auteur": "Thomas Quine",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Antique_curved_wrenches_(49172062197).jpg"
+ },
+ "pinces": {
+  "sous_rayon": "Pinces",
+  "fichier": "rayons/pinces.jpg",
+  "titre": "File:Barrel hook and mainspring punching pliers (AM 2004.51.20-2).jpg",
+  "auteur": "Lucien Hugoniot-Tissot",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Barrel_hook_and_mainspring_punching_pliers_(AM_2004.51.20-2).jpg"
+ },
+ "coupe-sciage-et-frappe": {
+  "sous_rayon": "Coupe, sciage et frappe",
+  "fichier": "rayons/coupe-sciage-et-frappe.jpg",
+  "titre": "File:Hand Saws.jpg",
+  "auteur": "F. D. Richards",
+  "licence": "CC BY-SA 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Hand_Saws.jpg"
+ },
+ "mesure": {
+  "sous_rayon": "Mesure",
+  "fichier": "rayons/mesure.jpg",
+  "titre": "File:Colorful Measure tape isolated on white background (41903827290).jpg",
+  "auteur": "Ready Elements",
+  "licence": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:Colorful_Measure_tape_isolated_on_white_background_(41903827290).jpg"
+ },
+ "usinage-et-serrage": {
+  "sous_rayon": "Usinage et serrage",
+  "fichier": "rayons/usinage-et-serrage.jpg",
+  "titre": "File:Bench vises (Mengeme).jpg",
+  "auteur": "Biser Todorov",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Bench_vises_(Mengeme).jpg"
+ },
+ "percage-et-vissage": {
+  "sous_rayon": "Perçage et vissage",
+  "fichier": "rayons/percage-et-vissage.jpg",
+  "titre": "File:Black and Decker Matrix Lithium 20v Cordless Drill (41159305895).jpg",
+  "auteur": "Tony Webster from Minneapolis, Minnesota, United States",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Black_and_Decker_Matrix_Lithium_20v_Cordless_Drill_(41159305895).jpg"
+ },
+ "meulage-et-poncage": {
+  "sous_rayon": "Meulage et ponçage",
+  "fichier": "rayons/meulage-et-poncage.jpg",
+  "titre": "File:Angle grinder in Bonn Central Station.jpg",
+  "auteur": "Spielvogel\n\nFor a gallery of some more of my uploaded pictures you may see: here.",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Angle_grinder_in_Bonn_Central_Station.jpg"
+ },
+ "decoupe-et-menuiserie": {
+  "sous_rayon": "Découpe et menuiserie",
+  "fichier": "rayons/decoupe-et-menuiserie.jpg",
+  "titre": "File:Circular saw guide, Woods and Forests Department(GN13113).jpg",
+  "auteur": "South Australian government photographer",
+  "licence": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:Circular_saw_guide,_Woods_and_Forests_Department(GN13113).jpg"
+ },
+ "autres-machines": {
+  "sous_rayon": "Autres machines",
+  "fichier": "rayons/autres-machines.jpg",
+  "titre": "File:Air compressor at Diesel House.JPG",
+  "auteur": "Work With Sounds",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Air_compressor_at_Diesel_House.JPG"
+ },
+ "postes": {
+  "sous_rayon": "Postes",
+  "fichier": "rayons/postes.jpg",
+  "titre": "File:Illustration of Oxy Acetyline Welding 001.jpg",
+  "auteur": "Shreya.Bhopal",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Illustration_of_Oxy_Acetyline_Welding_001.jpg"
+ },
+ "consommables": {
+  "sous_rayon": "Consommables",
+  "fichier": "rayons/consommables.jpg",
+  "titre": "File:0277Welders with welding machines and equipment at work in Bustos Bulacan 12.jpg",
+  "auteur": "Judgefloro",
+  "licence": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:0277Welders_with_welding_machines_and_equipment_at_work_in_Bustos_Bulacan_12.jpg"
+ },
+ "decoupe": {
+  "sous_rayon": "Découpe",
+  "fichier": "rayons/decoupe.jpg",
+  "titre": "File:1960s Norton Adalox sanding discs no 1002 127 mm for the Swedish market.jpg",
+  "auteur": "R. Henrik Nilsson",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:1960s_Norton_Adalox_sanding_discs_no_1002_127_mm_for_the_Swedish_market.jpg"
+ },
+ "protection": {
+  "sous_rayon": "Protection",
+  "fichier": "rayons/protection.jpg",
+  "titre": "File:MannGlas welding helmet 2views.jpg",
+  "auteur": "Glogger",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:MannGlas_welding_helmet_2views.jpg"
+ },
+ "peintures": {
+  "sous_rayon": "Peintures",
+  "fichier": "rayons/peintures.jpg",
+  "titre": "File:Open Soy Paint Can (10481948313).jpg",
+  "auteur": "United Soybean Board",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Open_Soy_Paint_Can_(10481948313).jpg"
+ },
+ "produits-chimiques": {
+  "sous_rayon": "Produits chimiques",
+  "fichier": "rayons/produits-chimiques.jpg",
+  "titre": "File:Solvent garbage jerrican in a chemistry lab.jpg",
+  "auteur": "DaraDaraDara",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Solvent_garbage_jerrican_in_a_chemistry_lab.jpg"
+ },
+ "colles-et-mastics": {
+  "sous_rayon": "Colles et mastics",
+  "fichier": "rayons/colles-et-mastics.jpg",
+  "titre": "File:Amy-m-lavine-glue-adhesives.jpg",
+  "auteur": "Amy M Lavine",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Amy-m-lavine-glue-adhesives.jpg"
+ },
+ "application": {
+  "sous_rayon": "Application",
+  "fichier": "rayons/application.jpg",
+  "titre": "File:Paint-roller (23956075297).jpg",
+  "auteur": "r. nial bradshaw",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Paint-roller_(23956075297).jpg"
+ },
+ "tuyaux": {
+  "sous_rayon": "Tuyaux",
+  "fichier": "rayons/tuyaux.jpg",
+  "titre": "File:Multiple large dusty black plastic pipes.jpg",
+  "auteur": "W.carter",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Multiple_large_dusty_black_plastic_pipes.jpg"
+ },
+ "robinetterie": {
+  "sous_rayon": "Robinetterie",
+  "fichier": "rayons/robinetterie.jpg",
+  "titre": "File:An old water tap.JPG",
+  "auteur": "Aathavan jaffna",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:An_old_water_tap.JPG"
+ },
+ "evacuation": {
+  "sous_rayon": "Évacuation",
+  "fichier": "rayons/evacuation.jpg",
+  "titre": "File:A drain making the best of a rock Wellcome L0060573.jpg",
+  "auteur": "inconnu",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:A_drain_making_the_best_of_a_rock_Wellcome_L0060573.jpg"
+ },
+ "c-bles-et-conduits": {
+  "sous_rayon": "Câbles et conduits",
+  "fichier": "rayons/c-bles-et-conduits.jpg",
+  "titre": "File:Electrical parts installed in apartment building.JPG",
+  "auteur": "Dmitry G",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Electrical_parts_installed_in_apartment_building.JPG"
+ },
+ "appareillage": {
+  "sous_rayon": "Appareillage",
+  "fichier": "rayons/appareillage.jpg",
+  "titre": "File:Circuit Breaker.jpg",
+  "auteur": "Douglas Paul Perkins",
+  "licence": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:Circuit_Breaker.jpg"
+ },
+ "eclairage": {
+  "sous_rayon": "Éclairage",
+  "fichier": "rayons/eclairage.jpg",
+  "titre": "File:20220404 Campinglampe Varta L10 2022.jpg",
+  "auteur": "VSchagow",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:20220404_Campinglampe_Varta_L10_2022.jpg"
+ },
+ "moteur": {
+  "sous_rayon": "Moteur",
+  "fichier": "rayons/moteur.jpg",
+  "titre": "File:Changing a fuel injector while performing maintenance on a car engine.jpg",
+  "auteur": "Shixart1985",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Changing_a_fuel_injector_while_performing_maintenance_on_a_car_engine.jpg"
+ },
+ "suspension": {
+  "sous_rayon": "Suspension",
+  "fichier": "rayons/suspension.jpg",
+  "titre": "File:Shock absorber demonstration example SDVN 12 50 0 0 N by Forkardt Gefttech GmbH Ekarth Germany.jpg",
+  "auteur": "R. Henrik Nilsson",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Shock_absorber_demonstration_example_SDVN_12_50_0_0_N_by_Forkardt_Gefttech_GmbH_Ekarth_Germany.jpg"
+ },
+ "direction": {
+  "sous_rayon": "Direction",
+  "fichier": "rayons/direction.jpg",
+  "titre": "File:Child learn to drive. Hands on steering wheel closeup.jpg",
+  "auteur": "Shixart1985",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Child_learn_to_drive._Hands_on_steering_wheel_closeup.jpg"
+ },
+ "electricite-automobile": {
+  "sous_rayon": "Électricité automobile",
+  "fichier": "rayons/electricite-automobile.jpg",
+  "titre": "File:Alternator from Allen generating set, ex-Malvern.jpg",
+  "auteur": "Andy Dingley",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Alternator_from_Allen_generating_set,_ex-Malvern.jpg"
+ },
+ "carrosserie": {
+  "sous_rayon": "Carrosserie",
+  "fichier": "rayons/carrosserie.jpg",
+  "titre": "File:Reflections from rearview mirrors in front of TRA Tianzhong Station 20160228.jpg",
+  "auteur": "Mk2010",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Reflections_from_rearview_mirrors_in_front_of_TRA_Tianzhong_Station_20160228.jpg"
+ },
+ "mecanique": {
+  "sous_rayon": "Mécanique",
+  "fichier": "rayons/mecanique.jpg",
+  "titre": "File:BALL BEARINGS WITH PLANE BACKGROUNDS - NARA - 17468972.jpg",
+  "auteur": "Unknown authorUnknown author or not provided",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:BALL_BEARINGS_WITH_PLANE_BACKGROUNDS_-_NARA_-_17468972.jpg"
+ },
+ "electrique": {
+  "sous_rayon": "Électrique",
+  "fichier": "rayons/electrique.jpg",
+  "titre": "File:AC Motor - Cut Section - Electricity Gallery - BITM - Kolkata 2015-05-09 6513.JPG",
+  "auteur": "Biswarup Ganguly",
+  "licence": "CC BY 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:AC_Motor_-_Cut_Section_-_Electricity_Gallery_-_BITM_-_Kolkata_2015-05-09_6513.JPG"
+ },
+ "pieces-de-travail": {
+  "sous_rayon": "Pièces de travail",
+  "fichier": "rayons/pieces-de-travail.jpg",
+  "titre": "File:Ca 1900 drill bit size 6 or 9 by Carl Hoennecknoevel Remscheid Germany.jpg",
+  "auteur": "R. Henrik Nilsson",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Ca_1900_drill_bit_size_6_or_9_by_Carl_Hoennecknoevel_Remscheid_Germany.jpg"
+ },
+ "outils": {
+  "sous_rayon": "Outils",
+  "fichier": "rayons/outils.jpg",
+  "titre": "File:A young child uses a bright red shovel to dig in the dirt, creating patterns and exploring the earth in a vibrant outdoor setting.jpg",
+  "auteur": "Shixart1985",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:A_young_child_uses_a_bright_red_shovel_to_dig_in_the_dirt,_creating_patterns_and_exploring_the_earth_in_a_vibrant_outdoor_setting.jpg"
+ },
+ "irrigation-et-pompage": {
+  "sous_rayon": "Irrigation et pompage",
+  "fichier": "rayons/irrigation-et-pompage.jpg",
+  "titre": "File:100-Year old Water Induction Pump (29603660606).jpg",
+  "auteur": "Pacific Southwest Region USFWS from Sacramento, US",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:100-Year_old_Water_Induction_Pump_(29603660606).jpg"
+ },
+ "quincaillerie": {
+  "sous_rayon": "Quincaillerie",
+  "fichier": "rayons/quincaillerie.jpg",
+  "titre": "File:Antique door handle in Quebec City.jpg",
+  "auteur": "Wilfredor",
+  "licence": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:Antique_door_handle_in_Quebec_City.jpg"
+ },
+ "portail": {
+  "sous_rayon": "Portail",
+  "fichier": "rayons/portail.jpg",
+  "titre": "File:Bicycle and child’s bicycle chained up to metal gate (20730464421).jpg",
+  "auteur": "Кирилл Чеботарь",
+  "licence": "CC BY 2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Bicycle_and_child%E2%80%99s_bicycle_chained_up_to_metal_gate_(20730464421).jpg"
+ },
+ "fenetre": {
+  "sous_rayon": "Fenêtre",
+  "fichier": "rayons/fenetre.jpg",
+  "titre": "File:Rew13k04-089 window handle.JPG",
+  "auteur": "Roly Williams",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Rew13k04-089_window_handle.JPG"
+ },
+ "abrasifs": {
+  "sous_rayon": "Abrasifs",
+  "fichier": "rayons/abrasifs.jpg",
+  "titre": "File:Sandpaper (AM 2015.34.36-1).jpg",
+  "auteur": "not researched",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Sandpaper_(AM_2015.34.36-1).jpg"
+ },
+ "fixation-et-emballage": {
+  "sous_rayon": "Fixation et emballage",
+  "fichier": "rayons/fixation-et-emballage.jpg",
+  "titre": "File:3d-FAQLOVE-packing-tape-art-installation-by-Ostap.jpg",
+  "auteur": "Slava Ostap",
+  "licence": "CC BY-SA 3.0 de",
+  "source": "https://commons.wikimedia.org/wiki/File:3d-FAQLOVE-packing-tape-art-installation-by-Ostap.jpg"
+ },
+ "nettoyage-et-entretien": {
+  "sous_rayon": "Nettoyage et entretien",
+  "fichier": "rayons/nettoyage-et-entretien.jpg",
+  "titre": "File:Lubricant - Gleitgel.jpg",
+  "auteur": "Sciencia58",
+  "licence": "CC0",
+  "source": "https://commons.wikimedia.org/wiki/File:Lubricant_-_Gleitgel.jpg"
+ },
+ "grillage-fils-et-c-bles": {
+  "sous_rayon": "Grillage, fils et câbles",
+  "fichier": "rayons/grillage-fils-et-c-bles.jpg",
+  "titre": "File:14 juillet 2013 - Escargots - 004.jpg",
+  "auteur": "FarceRéjeane",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:14_juillet_2013_-_Escargots_-_004.jpg"
+ },
+ "embrayage-et-transmission": {
+  "sous_rayon": "Embrayage et transmission",
+  "fichier": "rayons/embrayage-et-transmission.jpg",
+  "titre": "File:Basket clutch.png",
+  "auteur": "Genetics4good",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Basket_clutch.png"
+ },
+ "accessoires": {
+  "sous_rayon": "Accessoires",
+  "fichier": "rayons/accessoires.jpg",
+  "titre": "File:1327664853 u-125-ris.2.jpg",
+  "auteur": "Unipro",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:1327664853_u-125-ris.2.jpg"
+ },
+ "protection-individuelle": {
+  "sous_rayon": "Protection individuelle",
+  "fichier": "rayons/protection-individuelle.jpg",
+  "titre": "File:Casco.png",
+  "auteur": "Sir Diego",
+  "licence": "CC BY-SA 3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Casco.png"
+ },
+ "raccords": {
+  "sous_rayon": "Raccords",
+  "fichier": "rayons/raccords.jpg",
+  "titre": "File:Elbow 1 (PSF).png",
+  "auteur": "Pearson Scott Foresman",
+  "licence": "Public domain",
+  "source": "https://commons.wikimedia.org/wiki/File:Elbow_1_(PSF).png"
+ },
+ "tubes": {
+  "sous_rayon": "Tubes",
+  "fichier": "rayons/tubes.jpg",
+  "titre": "File:4X-HSS Micha.jpg",
+  "auteur": "LLHZ2805",
+  "licence": "CC BY-SA 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:4X-HSS_Micha.jpg"
+ },
+ "freinage": {
+  "sous_rayon": "Freinage",
+  "fichier": "rayons/freinage.jpg",
+  "titre": "File:2020 Chevrolet Bolt EV front disc brake 1.jpg",
+  "auteur": "4300streetcar",
+  "licence": "CC BY 4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:2020_Chevrolet_Bolt_EV_front_disc_brake_1.jpg"
+ }
+}

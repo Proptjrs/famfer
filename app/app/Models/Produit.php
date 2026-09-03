@@ -48,6 +48,25 @@ class Produit extends Model
     }
 
     /**
+     * L'illustration de repli : celle de la catégorie du produit.
+     *
+     * Trois échelons, du plus précis au plus général : la photo du produit,
+     * l'image de sa famille, puis le dessin au trait. Le dernier ne manque
+     * jamais, donc aucun produit n'apparaît comme un cadre vide.
+     */
+    public function imageDeCategorie(): ?string
+    {
+        $categorie = $this->relationLoaded('categorie') ? $this->categorie : $this->categorie()->first();
+
+        if (! $categorie) {
+            return null;
+        }
+
+        return $categorie->urlImage()
+            ?? $categorie->parente?->urlImage();
+    }
+
+    /**
      * La vignette : la première photo, ou rien.
      *
      * Les vues se rabattent sur le dessin vectoriel quand il n'y a pas de

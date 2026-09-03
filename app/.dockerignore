@@ -29,6 +29,12 @@ storage/framework/sessions/*
 storage/framework/views/*
 storage/framework/testing/*
 storage/app/public/*
+# Sauf les illustrations de rayon : ce sont des fichiers sous licence libre,
+# indispensables au catalogue, et le disque d'un conteneur ne survit pas à un
+# redéploiement. Elles voyagent donc dans l'image, contrairement aux photos
+# téléversées par les vendeurs.
+!storage/app/public/rayons
+!storage/app/public/rayons/*
 bootstrap/cache/*.php
 .phpunit.result.cache
 .phpunit.cache/

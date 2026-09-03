@@ -25,3 +25,11 @@ Thumbs.db
 
 # Le dossier de travail de Claude Code, propre au poste.
 /.claude
+
+# Les illustrations de rayon sont versionnées : ce sont des fichiers sous
+# licence libre, indispensables au semis de démonstration, et le disque d'un
+# conteneur est éphémère. Les photos téléversées par les vendeurs, elles, ne
+# le sont pas.
+!storage/app/public/rayons/
+!storage/app/public/rayons/*.jpg
+storage/app/public/produits/

@@ -1,2 +1,7 @@
 *
 !.gitignore
+
+# Sauf les illustrations de rayon, qui font partie du catalogue et doivent
+# suivre le dépôt. Les photos des vendeurs, elles, restent hors de git.
+!rayons/
+!rayons/*.jpg

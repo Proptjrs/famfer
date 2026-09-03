@@ -15,6 +15,15 @@ Route::get('/produit/{produit:slug}', [CatalogueController::class, 'produit'])->
 Route::get('/boutique/{boutique:slug}', [BoutiqueController::class, 'vitrine'])->name('boutique');
 Route::view('/conditions', 'legal.conditions')->name('conditions');
 
+// Citer les auteurs des illustrations est une obligation des licences libres
+// sous lesquelles elles sont publiées, pas une politesse.
+Route::get('/credits', function () {
+    return view('legal.credits', [
+        'illustrations' => App\Models\Categorie::with('parente')
+            ->whereNotNull('image')->orderBy('parente_id')->orderBy('rang')->get(),
+    ]);
+})->name('credits');
+
 /* ---- Entrée et sortie ---- */
 Route::middleware('guest')->group(function () {
     Route::get('/connexion', [AuthController::class, 'formulaireConnexion'])->name('connexion');

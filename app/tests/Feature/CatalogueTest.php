@@ -80,7 +80,13 @@ class CatalogueTest extends TestCase
     {
         $rayons = Categorie::rayonsAvecCompte();
 
-        $this->assertCount(7, $rayons);
+        // On ne fige pas le nombre : le catalogue vient d'un fichier de
+        // données qui grandit. Ce qui doit tenir, c'est qu'aucun rayon
+        // n'affiche zéro alors que ses sous-rayons sont pleins.
+        $this->assertSame(
+            Categorie::whereNull('parente_id')->count(),
+            $rayons->count()
+        );
         foreach ($rayons as $r) {
             $this->assertGreaterThan(0, $r->produits_count, "Le rayon « {$r->nom} » compte zéro.");
         }

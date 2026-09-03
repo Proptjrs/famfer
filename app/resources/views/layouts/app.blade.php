@@ -276,6 +276,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--bord);vertical-align:top}
       <h3>FamFer</h3>
       <a href="{{ route('accueil') }}">Le catalogue</a>
       <a href="{{ route('conditions') }}">Conditions générales</a>
+      <a href="{{ route('credits') }}">Crédits des images</a>
       <a href="{{ route('vendeur.ouvrir') }}">Vendez sur FamFer</a>
     </div>
     <div>

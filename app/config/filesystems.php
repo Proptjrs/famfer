@@ -41,7 +41,11 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // Une adresse relative, et non « APP_URL . /storage » : le port
+            // du serveur de développement ne figure pas dans APP_URL, et les
+            // images pointaient donc vers le port 80. Relative, l'adresse suit
+            // l'hôte et le port réellement servis, en local comme en ligne.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

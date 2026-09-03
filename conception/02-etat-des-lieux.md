@@ -3,7 +3,7 @@
 Document de suivi. Il dit ce qui existe réellement dans `app/`, ce qui
 l'éprouve, et ce qui reste.
 
-**Au 3 septembre 2026 : 93 tests, 488 assertions, tous verts sur PostgreSQL.**
+**Au 3 septembre 2026 : 93 tests, 589 assertions, tous verts sur PostgreSQL.**
 
 ---
 
@@ -169,3 +169,66 @@ Render (payant), un stockage objet type S3 (le disque `public` se remplace par
 re-téléverser avant la soutenance.
 
 `PhotosTest` : 16 tests.
+
+
+---
+
+## Le catalogue complet, et de vraies images
+
+### 689 références
+
+Le catalogue vient du document fourni par le client — 14 rayons, 57
+sous-rayons, 689 références, du fer à béton aux pièces détachées automobiles en
+passant par la plomberie et les EPI. Il est extrait du PDF vers un fichier de
+données PHP, puis semé : **1 854 fiches produit**, chaque article étant tenu par
+deux boutiques sur trois pour que la comparaison des prix ait un sens.
+
+Les prix sont dérivés du nom de l'article, dans une fourchette propre à chaque
+sous-rayon. Deux conséquences voulues : ils sont **stables** d'un semis à
+l'autre — le même article vaut toujours la même chose, donc une démonstration
+se rejoue à l'identique — et ils sont **indicatifs**, à remplacer par de vrais
+relevés avant toute mise en service. C'est écrit en tête du fichier engendré.
+
+### Des photos, sous licence libre
+
+Les photos de produits des places de marché et des fabricants sont protégées :
+les reprendre exposerait le projet. Les illustrations viennent donc de
+**Wikimedia Commons**, et uniquement de fichiers sous CC0, domaine public, CC BY
+ou CC BY-SA. L'auteur, la licence et la page d'origine de chacune sont
+enregistrés en base et publiés sur `/credits` — c'est une obligation de ces
+licences, pas une politesse.
+
+**Comment elles sont choisies, et pourquoi c'est le point intéressant.** La
+recherche plein texte de Commons ramenait n'importe quoi : un avion pour
+« tube », un train pour « portail », un intérieur de musée pour « électrique ».
+Son score porte sur le texte de la page, pas sur ce que montre l'image.
+
+Deuxième essai par les **catégories** de Commons, tenues à la main par des
+contributeurs : plus juste, mais les catégories sont rangées par ordre
+alphabétique et leur premier fichier n'a aucune raison d'être représentatif —
+« Category:Hinges » commence par une photo de break américain de 1974.
+
+Troisième essai, celui qui marche : parmi les soixante premiers fichiers d'une
+catégorie, retenir celui dont **le nom** contient le mot de la catégorie.
+« padlock » dans « - Padlock -.jpg ». Signal grossier, mais il écarte
+l'essentiel du hors-sujet : 48 des 55 illustrations sont retenues à ce
+troisième passage.
+
+### Trois échelons d'affichage
+
+1. La photo téléversée par le vendeur.
+2. À défaut, l'illustration de la famille du produit.
+3. À défaut encore, le dessin au trait.
+
+Le dernier ne manque jamais, donc aucune fiche n'apparaît vide. Un catalogue de
+1 854 produits ne se photographie pas en un jour ; sans ces échelons, la
+quasi-totalité des fiches serait blanche.
+
+**Un défaut attrapé au passage** : le disque public de Laravel construisait ses
+adresses sur `APP_URL`, qui ne porte pas le port du serveur de développement.
+Les images pointaient donc vers le port 80 et ne s'affichaient pas. L'adresse
+est maintenant relative, et suit l'hôte réellement servi.
+
+Les illustrations sont versionnées et voyagent dans l'image Docker — le disque
+d'un conteneur ne survit pas à un redéploiement. Les photos des vendeurs, elles,
+restent hors du dépôt.
