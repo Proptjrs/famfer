@@ -56,29 +56,69 @@ h2{font-size:1.5rem;font-weight:700;text-transform:uppercase;margin-bottom:16px}
 .pastille{background:var(--forge);color:#fff;border-radius:20px;padding:1px 8px;
           font-size:.76rem;font-weight:700;margin-left:2px}
 
+/* ══ Bandeau de service ═══════════════════════════════════════════════════
+   La ligne la plus haute, réservée à ce qui ne s'achète pas : la porte des
+   vendeurs et les conditions. La séparer du menu d'achat évite que « Vendre »
+   se lise comme une rubrique du catalogue. */
+.bandeau{background:#12181F;color:#8794A1;font-size:.8rem}
+.bandeau-in{max-width:1200px;margin:0 auto;padding:6px 22px;display:flex;
+            gap:18px;align-items:center;flex-wrap:wrap}
+.bandeau a{color:#AEB8C2}
+.bandeau a:hover{color:#fff;text-decoration:none}
+.bandeau .vendre{color:var(--forge-vif);font-weight:600}
+.bandeau .vendre:hover{color:#fff}
+
+/* ══ Menu du compte ═══════════════════════════════════════════════════════
+   Un « details » natif plutôt qu'un script : le clavier l'ouvre et le ferme
+   sans qu'on ait à réimplémenter quoi que ce soit, et il fonctionne même si le
+   JavaScript ne se charge pas. */
+.compte{position:relative}
+.compte > summary{list-style:none;cursor:pointer;display:flex;align-items:center;
+                  gap:7px;color:#AEB8C2;font-size:.92rem;font-weight:500;
+                  padding:7px 10px;border-radius:8px;white-space:nowrap}
+.compte > summary::-webkit-details-marker{display:none}
+.compte > summary:hover,.compte[open] > summary{color:#fff;background:rgba(255,255,255,.08)}
+.compte .fleche{transition:transform .15s}
+.compte[open] .fleche{transform:rotate(180deg)}
+.tiroir{position:absolute;right:0;top:calc(100% + 8px);z-index:60;
+        background:var(--blanc);border:1px solid var(--bord);border-radius:var(--r-sm);
+        box-shadow:0 12px 32px rgba(16,24,32,.22);padding:12px;min-width:236px}
+.tiroir .btn{width:100%;justify-content:center;margin-bottom:10px}
+/* « .tete nav a » pose un gris clair, et sa spécificité l'emporte sur une
+   règle en « .tiroir a » : les liens du menu sortaient délavés sur fond blanc.
+   On rentre dans la même cascade plutôt que de forcer avec « important ». */
+.tete nav .tiroir a{display:flex;align-items:center;gap:10px;padding:9px 10px;
+          color:var(--nuit);font-size:.92rem;border-radius:8px;font-weight:500}
+.tete nav .tiroir a:hover{color:var(--nuit);background:var(--fond);text-decoration:none}
+.tete nav .tiroir p a{display:inline;padding:0;color:var(--forge);font-weight:600}
+.tiroir hr{border:0;border-top:1px solid var(--bord);margin:8px 0}
+.tiroir .titre{color:var(--gris);font-size:.76rem;text-transform:uppercase;
+               letter-spacing:.5px;padding:4px 10px;font-weight:700}
+.tiroir form{margin:0}
+.tiroir form button{width:100%;justify-content:center;margin-top:6px}
+
 /* ══ Barre des catégories ═════════════════════════════════════════════════
    Une place de marché se parcourt par familles autant que par recherche : sans
    cette barre, le catalogue n'était atteignable qu'en tapant le bon mot. */
-/* 69 px et non 66 : l'en-tête mesure 66 px de contenu plus les 3 px de sa
-   bordure orange. À 66, la barre laisse voir une raie de page en défilant. */
 .rayons{background:var(--acier-2);border-bottom:1px solid rgba(255,255,255,.08);
         position:sticky;top:69px;z-index:49}
 .rayons-in{max-width:1200px;margin:0 auto;padding:0 22px;display:flex;
-           align-items:stretch;gap:4px;overflow-x:auto;scrollbar-width:thin}
-.rayons a{color:#D5DBE1;font-size:.88rem;font-weight:500;white-space:nowrap;
-          padding:11px 13px;border-bottom:3px solid transparent;line-height:1.2}
+           align-items:stretch;gap:2px;overflow-x:auto;scrollbar-width:thin}
+.rayons a{color:#D5DBE1;font-size:.86rem;font-weight:500;white-space:nowrap;
+          padding:11px 12px;border-bottom:3px solid transparent;line-height:1.2;
+          display:flex;align-items:center;gap:7px}
 .rayons a:hover{color:#fff;background:rgba(255,255,255,.06);text-decoration:none}
 .rayons a.ici{color:#fff;border-bottom-color:var(--forge-vif)}
-.rayons .nb{color:#8794A1;font-size:.76rem;margin-left:5px}
+.rayons .nb{color:#8794A1;font-size:.74rem}
 .rayons a:hover .nb,.rayons a.ici .nb{color:#C3CCD5}
 .rayon-tout{font-weight:700 !important;color:#fff !important}
 
 /* La recherche vit dans l'en-tête : on cherche du fer depuis n'importe quelle
    page, pas seulement depuis l'accueil. */
-.quete{display:flex;flex:1 1 260px;max-width:420px;min-width:0}
-.quete input{flex:1;min-width:0;padding:9px 14px;border:0;font-size:.92rem;
+.quete{display:flex;flex:1 1 260px;max-width:520px;min-width:0}
+.quete input{flex:1;min-width:0;padding:10px 15px;border:0;font-size:.92rem;
              border-radius:8px 0 0 8px}
-.quete button{border:0;background:var(--forge);color:#fff;padding:0 16px;
+.quete button{border:0;background:var(--forge);color:#fff;padding:0 20px;
               border-radius:0 8px 8px 0;cursor:pointer;font-weight:600}
 .quete button:hover{background:var(--forge-vif)}
 
@@ -156,13 +196,17 @@ tr:last-child td{border-bottom:0}
   h1{font-size:1.9rem}
   .tete-in{padding:12px 16px;gap:12px}
   .tete nav{margin-left:0;width:100%;gap:15px}
-  /* La barre colle sous un en-tête qui a grandi : la laisser à 66 px la
+  /* La barre colle sous un en-tête qui a grandi : la laisser à 69 px la
      ferait chevaucher le menu. Sur téléphone, elle défile avec la page. */
   .rayons{position:static}
   .rayons-in{padding:0 16px}
   /* Pas de « order » ici : il faisait passer la recherche AVANT la marque, et
      l'on arrivait sur une page dont on ne voyait pas le nom. */
   .quete{max-width:none;flex-basis:100%}
+  .bandeau-in{padding:6px 16px;gap:14px}
+  /* Le tiroir déborderait de l'écran en position absolue : sur téléphone il
+     s'ancre au bord droit de la fenêtre plutôt qu'au bouton. */
+  .tiroir{right:-8px;min-width:210px}
   main{padding:22px 16px 64px}
 }
 </style>
@@ -186,50 +230,106 @@ tr:last-child td{border-bottom:0}
   </defs>
 </svg>
 
+{{-- Le bandeau de service : ce qui ne s'achète pas.
+     La porte des vendeurs y vit, séparée du menu d'achat — sinon « Vendre »
+     se lit comme une rubrique du catalogue. --}}
+<div class="bandeau">
+  <div class="bandeau-in">
+    <a href="{{ route('vendeur.demande') }}" class="vendre">★ Vendez sur FamFer</a>
+    <a href="{{ route('conditions') }}">Conditions générales</a>
+    <span style="margin-left:auto">Le fer, au juste prix — partout au Sénégal</span>
+  </div>
+</div>
+
 <header class="tete">
   <div class="tete-in">
     <a href="{{ route('accueil') }}" class="marque">Fam<span>Fer</span></a>
+
     <form method="GET" action="{{ route('accueil') }}" class="quete" role="search">
       <input name="q" value="{{ request('q') }}" aria-label="Chercher un article"
-             placeholder="fer 10, tôle bac, cornière 40…">
-      <button aria-label="Rechercher">Chercher</button>
+             placeholder="Cherchez un article, une référence ou une famille">
+      <button aria-label="Rechercher">Rechercher</button>
     </form>
 
     <nav>
-      @auth
-        {{-- Ce qu'on fait en tant qu'acheteur. --}}
-        @if(auth()->user()->acheteur)
-          <a href="{{ route('panier.voir') }}">Panier @if($n = count(session('panier', [])))<span class="pastille">{{ $n }}</span>@endif</a>
-          <a href="{{ route('acheteur.commandes') }}">Mes commandes</a>
-        @endif
-        <a href="{{ route('compte') }}">Mon compte</a>
+      {{-- Le compte tient dans un seul menu déroulant plutôt qu'en cinq liens
+           alignés : c'est ce qui laisse la place à la recherche, et ce qui
+           permet de nommer les espaces au lieu de les juxtaposer. --}}
+      <details class="compte">
+        <summary>
+          <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor"
+               stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+            <circle cx="10" cy="6.5" r="3.2"/>
+            <path d="M3.8 17c.6-3.4 3.2-5.2 6.2-5.2s5.6 1.8 6.2 5.2"/>
+          </svg>
+          @auth {{ Str::of(auth()->user()->name)->explode(' ')->first() }} @else Se connecter @endauth
+          <svg class="fleche" viewBox="0 0 20 20" width="11" height="11" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M4 7.5l6 5 6-5"/>
+          </svg>
+        </summary>
 
-        {{-- Puis l'espace professionnel, détaché du reste : ce n'est pas le
-             même métier, et le mélanger au panier fait chercher son commerce
-             au milieu de ses courses. --}}
-        @if(auth()->user()->vendeur)
-          <a href="{{ route('vendeur.tableau') }}" class="espace-pro">
-            Mon commerce
-            @if(auth()->user()->vendeur->statut === 'en_attente')
-              <span class="pastille" style="background:var(--ambre)">en attente</span>
+        <div class="tiroir">
+          @guest
+            <a href="{{ route('connexion') }}" class="btn">Se connecter</a>
+            <p style="color:var(--gris);font-size:.84rem;text-align:center;margin-bottom:10px">
+              Pas de compte ? <a href="{{ route('inscription') }}"
+                 style="display:inline;padding:0">En créer un</a>
+            </p>
+            <hr>
+            <a href="{{ route('vendeur.demande') }}">★ Vendez sur FamFer</a>
+            <a href="{{ route('conditions') }}">Conditions générales</a>
+          @else
+            <div class="titre">Mon espace</div>
+            <a href="{{ route('compte') }}">Mon compte</a>
+            @if(auth()->user()->acheteur)
+              <a href="{{ route('acheteur.commandes') }}">Mes commandes</a>
             @endif
+
+            @if(auth()->user()->vendeur)
+              <hr>
+              <div class="titre">Mon commerce</div>
+              <a href="{{ route('vendeur.tableau') }}">
+                Tableau de bord
+                @if(auth()->user()->vendeur->statut === 'en_attente')
+                  <span class="pastille" style="background:var(--ambre)">en attente</span>
+                @endif
+              </a>
+              <a href="{{ route('vendeur.offres') }}">Mes offres et mon stock</a>
+              <a href="{{ route('vendeur.commandes') }}">Mes ventes</a>
+              <a href="{{ route('vendeur.argent') }}">Mon argent</a>
+            @else
+              <hr>
+              <a href="{{ route('vendeur.demande') }}">★ Vendez sur FamFer</a>
+            @endif
+
+            @if(auth()->user()->est_admin)
+              <hr>
+              <div class="titre">Plateforme</div>
+              <a href="{{ route('admin.tableau') }}">Administration</a>
+            @endif
+
+            <hr>
+            <form method="POST" action="{{ route('deconnexion') }}">
+              @csrf <button class="btn btn-clair">Sortir</button>
+            </form>
+          @endguest
+        </div>
+      </details>
+
+      @auth
+        @if(auth()->user()->acheteur)
+          <a href="{{ route('panier.voir') }}" style="display:flex;align-items:center;gap:7px">
+            <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor"
+                 stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 3h2.2l2 10.5h9.4"/>
+              <path d="M5.4 6h12l-1.4 5.5H6.4"/>
+              <circle cx="7.5" cy="16.8" r="1.2"/><circle cx="15" cy="16.8" r="1.2"/>
+            </svg>
+            Panier
+            @if($n = count(session('panier', [])))<span class="pastille">{{ $n }}</span>@endif
           </a>
         @endif
-        @if(auth()->user()->est_admin)
-          <a href="{{ route('admin.tableau') }}" class="espace-pro">Administration</a>
-        @endif
-
-        <form method="POST" action="{{ route('deconnexion') }}" style="display:inline">
-          @csrf <button class="btn btn-sm btn-clair">Sortir</button>
-        </form>
-      @else
-        {{-- La porte des vendeurs doit se voir AVANT d'avoir un compte : une
-             quincaillerie qui arrive ici ne sait pas que la plateforme
-             l'accepte. En cliquant, elle passe par la connexion et « intended »
-             la ramène au formulaire de demande. --}}
-        <a href="{{ route('vendeur.demande') }}" class="espace-pro">Vendre sur FamFer</a>
-        <a href="{{ route('connexion') }}">Se connecter</a>
-        <a href="{{ route('inscription') }}" class="btn btn-sm">Créer un compte</a>
       @endauth
     </nav>
   </div>
@@ -245,6 +345,7 @@ tr:last-child td{border-bottom:0}
     @foreach($famillesDuMenu ?? [] as $f)
       <a href="{{ route('accueil', ['famille' => $f->id]) }}"
          class="{{ (int) request('famille') === $f->id ? 'ici' : '' }}">
+        @include('partials.icone-famille', ['famille' => $f->nom])
         {{ $f->nom }}<span class="nb">{{ $f->articles_count }}</span>
       </a>
     @endforeach
