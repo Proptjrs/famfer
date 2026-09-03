@@ -102,6 +102,7 @@
 
 <p style="margin-top:24px;display:flex;gap:20px;flex-wrap:wrap">
   <a href="{{ route('vendeur.offres') }}">Gérer mes offres et mon stock →</a>
+  <a href="{{ route('vendeur.commandes') }}">Toutes mes commandes →</a>
   <a href="{{ route('vendeur.argent') }}">Mon argent et mes virements →</a>
 </p>
 @endsection

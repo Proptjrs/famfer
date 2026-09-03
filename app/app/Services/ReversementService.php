@@ -68,6 +68,17 @@ class ReversementService
             );
         }
 
+        // Sans destination, pas de virement. L'écriture qui suit éteint la
+        // dette envers le vendeur : la passer sans savoir où envoyer l'argent
+        // reviendrait à effacer ce qu'on lui doit sans le lui avoir versé, et
+        // le grand livre resterait équilibré — la faute serait invisible.
+        if (! $vendeur->peutEtreVire()) {
+            throw new RuntimeException(
+                'Aucun compte de versement enregistré : indiquez où envoyer '
+                . 'les fonds avant de demander un virement.'
+            );
+        }
+
         $du = $this->livre->solde(GrandLivre::compteVendeur($vendeur->id));
 
         if ($du <= 0) {

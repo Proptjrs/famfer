@@ -176,7 +176,7 @@ class CompteTest extends TestCase
 
         $admin = User::create([
             'name' => 'Administration', 'email' => 'admin@famfer.sn',
-            'password' => 'password', 'est_administrateur' => true,
+            'password' => 'password', 'est_admin' => true,
         ]);
 
         $enAttente = Vendeur::where('statut', 'en_attente')->orderBy('id')->first();

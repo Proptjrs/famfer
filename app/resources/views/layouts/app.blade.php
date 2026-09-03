@@ -75,7 +75,15 @@ h2{font-size:1.5rem;font-weight:700;text-transform:uppercase;margin-bottom:16px}
               border-radius:0 8px 8px 0;cursor:pointer;font-weight:600}
 .quete button:hover{background:var(--forge-vif)}
 
-main{max-width:1200px;margin:0 auto;padding:30px 22px 80px}
+main{max-width:1200px;margin:0 auto;padding:30px 22px 60px}
+
+/* ══ Pied de page ═════════════════════════════════════════════════════════ */
+.pied{background:var(--nuit);color:#8794A1;margin-top:40px;
+      border-top:3px solid var(--forge)}
+.pied-in{max-width:1200px;margin:0 auto;padding:26px 22px;display:flex;
+         gap:24px;flex-wrap:wrap;align-items:center;font-size:.88rem}
+.pied a{color:#C3CCD5}
+.pied a:hover{color:#fff}
 
 /* ══ Blocs ════════════════════════════════════════════════════════════════ */
 .carte{background:var(--blanc);border:1px solid var(--bord);border-radius:var(--r);
@@ -222,6 +230,19 @@ tr:last-child td{border-bottom:0}
   @if(session('erreur'))<div class="avis avis-err">{{ session('erreur') }}</div>@endif
   @yield('contenu')
 </main>
+
+<footer class="pied">
+  <div class="pied-in">
+    <span><strong style="color:#fff">FamFer</strong> — le fer, au juste prix</span>
+    <a href="{{ route('conditions') }}">Conditions générales</a>
+    <a href="{{ route('accueil') }}">Catalogue</a>
+    @guest<a href="{{ route('vendeur.demande') }}">Vendre sur FamFer</a>@endguest
+    <span style="margin-left:auto;max-width:44ch">
+      Votre argent est retenu par FamFer jusqu'à ce que vous confirmiez la
+      réception. La commission ne porte que sur la marchandise.
+    </span>
+  </div>
+</footer>
 
 </body>
 </html>

@@ -131,4 +131,62 @@
   <div class="carte vide">Aucun litige ouvert.</div>
 @endforelse
 
+{{-- Les maisons vérifiées, et le taux qu'on négocie avec chacune.
+     La colonne « taux_commission_pour_mille » existait par vendeur depuis le
+     début, mais rien ne permettait de la changer : tout le monde payait 8 %,
+     alors que la table prévoyait le contraire. --}}
+<h2 style="margin-top:34px">Les quincailleries et leur commission</h2>
+<div class="carte tableau-large"><table>
+  <tr>
+    <th>Maison</th><th>Commune</th><th>Note</th>
+    <th>Compte de versement</th><th style="width:210px">Commission</th>
+  </tr>
+  @forelse($maisons as $m)
+    <tr>
+      <td>
+        <a href="{{ route('vendeur.public', $m) }}">{{ $m->raison_sociale }}</a>
+        @if($m->statut === 'suspendu')<span class="etiq etiq-rouge">suspendue</span>@endif
+      </td>
+      <td style="color:var(--gris)">{{ $m->commune }}</td>
+      <td>
+        @if($m->nombre_evaluations)
+          <span class="mono">{{ $m->noteSurCinq() }}</span>
+          <span style="color:var(--gris);font-size:.82rem">({{ $m->nombre_evaluations }})</span>
+        @else
+          <span style="color:var(--gris);font-size:.82rem">—</span>
+        @endif
+      </td>
+      <td style="font-size:.84rem">
+        @if($m->peutEtreVire())
+          {{ $m->compteDeVersement() }}
+        @else
+          {{-- Sans destination, aucun virement ne peut partir : l'administration
+               doit pouvoir le repérer avant que le vendeur ne s'en plaigne. --}}
+          <span style="color:var(--forge)">aucun — virements impossibles</span>
+        @endif
+      </td>
+      <td>
+        <form method="POST" action="{{ route('admin.commission', $m) }}"
+              style="display:flex;gap:6px;align-items:center">
+          @csrf @method('PUT')
+          <input name="taux_pour_cent" value="{{ $m->taux_commission_pour_mille / 10 }}"
+                 style="width:70px;padding:6px 8px;border:1px solid var(--bord);border-radius:6px"
+                 inputmode="decimal">
+          <span style="color:var(--gris)">%</span>
+          <button class="btn btn-sm btn-clair">Fixer</button>
+        </form>
+      </td>
+    </tr>
+  @empty
+    <tr><td colspan="5" style="color:var(--gris)">Aucune maison vérifiée.</td></tr>
+  @endforelse
+</table></div>
+
+<div style="margin-top:18px">{{ $maisons->links() }}</div>
+
+<p style="color:var(--gris);font-size:.86rem;margin-top:14px;max-width:72ch">
+  Un taux modifié ne vaut que pour l'avenir : chaque commande fige le sien à sa
+  création, et les commandes déjà passées ne sont pas recalculées.
+</p>
+
 @endsection

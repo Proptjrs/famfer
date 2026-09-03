@@ -21,6 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // autrement, par la signature que vérifie RappelPaiementController.
         $middleware->validateCsrfTokens(except: ['rappel-paiement/*']);
 
+        // Le rôle d'administration, sous un nom court utilisable sur un groupe
+        // de routes. Sans lui, « administration/ » n'était gardé que par
+        // « auth » — c'est-à-dire par rien du tout.
+        $middleware->alias(['admin' => \App\Http\Middleware\EstAdministrateur::class]);
+
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {

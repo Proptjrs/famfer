@@ -44,6 +44,13 @@ $libelles = [
           @csrf
           <button class="btn btn-sm">Régler {{ number_format($c->montant_total, 0, ',', ' ') }} F</button>
         </form>
+        {{-- Dire ce qui se passe vraiment. Laisser croire à un encaissement
+             réel serait le seul mensonge de l'application. --}}
+        @if(config('paiement.simule'))
+          <span class="etiq etiq-ambre" style="align-self:center">
+            Paiement simulé — aucun franc ne quitte votre compte
+          </span>
+        @endif
       @endif
 
       @if($c->etat === 'en_livraison')

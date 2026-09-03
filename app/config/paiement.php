@@ -42,4 +42,14 @@ return [
      */
     'tolerance_horodatage' => (int) env('PAIEMENT_TOLERANCE_S', 300),
 
+    /*
+     * Le paiement est-il réellement passé chez l'opérateur ?
+     *
+     * Non tant qu'aucune clé d'appel n'est configurée : le bouton « Régler »
+     * appelle alors directement le service interne, sans qu'un franc ne bouge
+     * nulle part. C'est l'état d'un projet d'étude, et il faut le dire à
+     * l'écran plutôt que de laisser croire à un vrai encaissement.
+     */
+    'simule' => env('PAIEMENT_CLE_API') === null,
+
 ];

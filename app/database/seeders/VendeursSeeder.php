@@ -81,6 +81,12 @@ class VendeursSeeder extends Seeder
                 'latitude' => $lat,
                 'longitude' => $lng,
                 'statut' => $statut,
+                // Sans compte de versement, aucun virement ne peut être
+                // préparé : la démonstration s'arrêterait au premier reversement.
+                'versement_operateur' => $i % 2 === 0 ? 'wave' : 'om',
+                'versement_numero' => '77 000 00 0' . ($i + 1),
+                'versement_titulaire' => $nom,
+                'versement_modifie_le' => now(),
                 'verifie_le' => $statut === 'verifie' ? now() : null,
                 // Aucune note semée : elle se gagne. HistoriqueSeeder mène de
                 // vraies commandes jusqu'à l'avis, et le service recalcule la

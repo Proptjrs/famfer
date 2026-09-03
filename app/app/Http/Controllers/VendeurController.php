@@ -8,6 +8,7 @@ use App\Models\Famille;
 use App\Models\Offre;
 use App\Models\Reversement;
 use App\Models\Vendeur;
+use App\Notifications\ChangementCompteVersement;
 use App\Services\CommandeService;
 use App\Services\ConversionUnites;
 use App\Services\GrandLivre;
@@ -15,6 +16,7 @@ use App\Services\PilotageService;
 use App\Services\ReversementService;
 use App\Services\StockService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class VendeurController extends Controller
@@ -235,6 +237,38 @@ class VendeurController extends Controller
     }
 
     /**
+     * Toutes ses commandes, et pas seulement celles à traiter.
+     *
+     * Le tableau de bord ne montrait que « payée, acceptée, prête » : dès
+     * qu'une commande était remise, elle disparaissait de l'écran du vendeur.
+     * Il n'avait aucun moyen de retrouver ce qu'il avait vendu la semaine
+     * précédente, ni de comprendre pourquoi une commande avait été annulée.
+     */
+    public function commandes(Request $r)
+    {
+        $v = $this->vendeur($r);
+        $etat = $r->query('etat');
+
+        $requete = Commande::with('acheteur.utilisateur', 'lignes.offre.article', 'evaluation')
+            ->where('vendeur_id', $v->id);
+
+        if ($etat && array_key_exists($etat, Commande::TRANSITIONS)) {
+            $requete->where('etat', $etat);
+        }
+
+        return view('vendeur.commandes', [
+            'vendeur' => $v,
+            'etatFiltre' => $etat,
+            'liste' => $requete->orderByDesc('id')->paginate(20)->withQueryString(),
+            // Le compte par état, pour que les onglets disent combien il y a
+            // derrière chacun avant même de cliquer.
+            'parEtat' => Commande::where('vendeur_id', $v->id)
+                ->selectRaw('etat, count(*) as nombre')
+                ->groupBy('etat')->pluck('nombre', 'etat'),
+        ]);
+    }
+
+    /**
      * L'argent : ce qui a été viré, ce qui est en attente, ce qui est gelé.
      *
      * Un commerçant à qui l'on retient les fonds veut savoir combien, depuis
@@ -287,6 +321,45 @@ class VendeurController extends Controller
             'mouvements' => $mouvements->reverse()->values(),
             'cumul' => $cumul,
         ]);
+    }
+
+    /**
+     * Où envoyer l'argent de ce vendeur.
+     *
+     * Un changement de compte de versement est exactement ce qu'un intrus
+     * ferait après avoir pris la main sur un compte : on horodate la
+     * modification, et le titulaire en est prévenu.
+     */
+    public function enregistrerVersement(Request $r)
+    {
+        $v = $this->vendeur($r);
+
+        $d = $r->validate([
+            'versement_operateur' => 'required|in:wave,om',
+            // Un numéro sénégalais, avec ou sans indicatif ni séparateurs.
+            'versement_numero' => ['required', 'string', 'max:20',
+                'regex:/^(\+?221)?[\s.-]?(7[05678])[\s.-]?\d{3}[\s.-]?\d{2}[\s.-]?\d{2}$/'],
+            'versement_titulaire' => 'required|string|max:160',
+        ], [
+            'versement_numero.regex' =>
+                'Ce numéro ne ressemble pas à un numéro de téléphone sénégalais.',
+        ]);
+
+        $ancien = $v->compteDeVersement();
+
+        $v->update($d + ['versement_modifie_le' => now()]);
+
+        if ($ancien !== null && $ancien !== $v->fresh()->compteDeVersement()) {
+            try {
+                $r->user()->notify(new ChangementCompteVersement($v->fresh(), $ancien));
+            } catch (\Throwable $e) {
+                Log::warning('Changement de compte de versement non notifié', [
+                    'vendeur' => $v->id, 'erreur' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return back()->with('ok', 'Compte de versement enregistré.');
     }
 
     /** Le vendeur demande son virement : gelé si un litige est ouvert. */

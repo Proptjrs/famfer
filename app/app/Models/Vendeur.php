@@ -12,6 +12,8 @@ class Vendeur extends Model
         'utilisateur_id', 'raison_sociale', 'ninea', 'telephone', 'adresse',
         'commune', 'latitude', 'longitude', 'statut', 'verifie_le', 'verifie_par',
         'motif_suspension', 'taux_commission_pour_mille',
+        'versement_operateur', 'versement_numero', 'versement_titulaire',
+        'versement_modifie_le',
     ];
 
     /**
@@ -24,7 +26,7 @@ class Vendeur extends Model
     protected $casts = [
         'latitude' => 'float', 'longitude' => 'float',
         'note_sur_cent' => 'integer', 'nombre_evaluations' => 'integer',
-        'verifie_le' => 'datetime',
+        'verifie_le' => 'datetime', 'versement_modifie_le' => 'datetime',
         'taux_commission_pour_mille' => 'integer',
     ];
 
@@ -55,6 +57,29 @@ class Vendeur extends Model
     }
 
     /** Seul un vendeur vérifié est visible des acheteurs. */
+    /**
+     * Sait-on où lui envoyer son argent ?
+     *
+     * Tant que non, aucun virement ne peut être préparé : une écriture qui
+     * éteint la dette sans destination laisserait le vendeur sans recours et
+     * le grand livre sans faute apparente.
+     */
+    public function peutEtreVire(): bool
+    {
+        return $this->versement_operateur !== null
+            && $this->versement_numero !== null
+            && $this->versement_titulaire !== null;
+    }
+
+    /** « Wave · 77 000 00 01 · Quincaillerie Ndiaye », pour l'affichage. */
+    public function compteDeVersement(): ?string
+    {
+        return $this->peutEtreVire()
+            ? strtoupper($this->versement_operateur) . ' · ' . $this->versement_numero
+              . ' · ' . $this->versement_titulaire
+            : null;
+    }
+
     public function estVisible(): bool
     {
         return $this->statut === 'verifie';

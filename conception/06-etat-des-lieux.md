@@ -3,7 +3,7 @@
 Document de suivi, tenu à jour au fur et à mesure. Il dit ce qui existe
 réellement dans `app/`, ce qui l'éprouve, et ce qui reste.
 
-**Au 3 septembre 2026 : 146 tests, 707 assertions, tous verts sur PostgreSQL.**
+**Au 3 septembre 2026 : 172 tests, 778 assertions, tous verts sur PostgreSQL.**
 
 ---
 
@@ -331,3 +331,83 @@ calculée autrement que celle réellement prélevée serait pire que pas de page
 <https://github.com/Proptjrs/famfer> — branche `principale`, suivi réglé, local
 et distant identiques. Reste à brancher Render dessus : voir
 [07-mise-en-ligne.md](07-mise-en-ligne.md).
+
+---
+
+## La revue « comme les autres places de marché »
+
+Sept points repris d'un coup, à la demande. Le premier est de loin le plus
+grave, et il ne se voyait nulle part.
+
+### L'administration était ouverte à tout compte connecté
+
+Le groupe `administration/` n'était gardé que par `auth`. La colonne `est_admin`
+existait depuis le début du projet, et **rien ne la lisait jamais**. N'importe
+quel utilisateur connecté — un acheteur, un vendeur concurrent — pouvait donc :
+
+- vérifier sa propre inscription sans que personne ne regarde son dossier ;
+- suspendre une autre quincaillerie ;
+- fixer sa propre commission à zéro ;
+- **trancher un litige en sa faveur**, ce qui déplace de l'argent réel du
+  séquestre vers un compte.
+
+Un middleware `EstAdministrateur` ferme désormais le groupe, et journalise les
+tentatives : sur une plateforme qui détient des fonds, savoir qui a essayé
+d'entrer vaut autant que de l'en empêcher. `AdministrationFermeeTest` pousse
+chaque porte séparément — une seule oubliée suffirait — et vérifie les
+conséquences, pas seulement le code de retour : après une tentative
+d'arbitrage, le séquestre et la dette envers le vendeur doivent être au franc
+près ce qu'ils étaient.
+
+Ce garde-fou a immédiatement débusqué une erreur dans un test antérieur, qui
+écrivait `est_administrateur` au lieu de `est_admin` : il passait précisément
+parce que rien ne vérifiait le rôle.
+
+### La page d'argent promettait ce que la base ne pouvait pas tenir
+
+« Le montant part vers le compte Wave ou Orange Money enregistré à votre nom » —
+aucun champ ne portait ce compte. Quatre colonnes l'accueillent maintenant, et
+`ReversementService::preparer` **refuse** sans destination : l'écriture qui
+suit éteint la dette envers le vendeur, et la passer sans savoir où envoyer les
+fonds effacerait ce qu'on lui doit sans le lui avoir versé — le grand livre
+resterait équilibré, donc la faute serait invisible.
+
+Tout changement de ce compte est horodaté et signalé par courriel, l'ancien
+compte rappelé dans le message : c'est le premier geste d'un intrus, et le
+vendeur doit l'apprendre le jour même plutôt que le jour où l'argent n'arrive
+pas.
+
+### La connexion n'était pas limitée en tentatives
+
+Cinq essais par minute et par adresse sur la connexion comme sur l'inscription.
+Sans cela, un robot essaie des mots de passe indéfiniment sur une plateforme qui
+détient l'argent des gens.
+
+### Le vendeur ne voyait pas son passé
+
+Le tableau de bord ne montrait que « payée, acceptée, prête » : une commande
+remise disparaissait de son écran, et rien n'expliquait une annulation. Une page
+paginée montre tout, filtrable par état, avec le motif d'annulation, la
+commission prélevée et la note reçue sur chaque ligne.
+
+### Le taux de commission n'était pas négociable
+
+La colonne existait par vendeur ; tout le monde payait 8 % faute de moyen d'y
+toucher. L'administration le fixe désormais entre 0 et 20 %. Le nouveau taux ne
+vaut que pour l'avenir : chaque commande fige le sien à sa création, et
+recalculer les anciennes changerait après coup ce que le vendeur a déjà encaissé.
+
+### Il n'y avait pas de conditions générales
+
+Une place de marché qui séquestre des fonds doit dire ce qu'elle en fait. Dix
+articles : le séquestre et sa nature de dette, les trois délais, ce que la
+commission prélève et ce qu'elle ne prélève pas, le gel en cas de litige, la
+règle des avis, les données.
+
+### Le paiement se faisait passer pour réel
+
+Le bouton « Régler » appelle le service interne : aucun franc ne bouge. Tant
+qu'aucune clé d'opérateur n'est configurée, l'écran le dit maintenant en toutes
+lettres. C'était le seul mensonge de l'application.
+
+**Au 3 septembre 2026 : 172 tests, 778 assertions.**
