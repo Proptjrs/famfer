@@ -2,41 +2,57 @@
 @section('titre', 'Crédits des images')
 @section('contenu')
 
-<div style="max-width:80ch">
-  <h1>Crédits des images</h1>
-  <p style="color:var(--gris);margin-bottom:16px">
+@include('partials.entete', [
+  'titre' => 'Crédits des images',
+  'sous' => "Citer l'auteur d'une image sous licence libre n'est pas une politesse : c'est une obligation de la licence.",
+  'fil' => [
+    ['libelle' => 'Accueil', 'url' => route('accueil')],
+    ['libelle' => 'Crédits des images'],
+  ],
+])
+
+<div>
+  <p class="prose secondaire" style="margin-bottom:var(--s5)">
     Les illustrations de rayon viennent de
-    <a href="https://commons.wikimedia.org" style="color:var(--bleu)">Wikimedia Commons</a>,
-    sous licence libre. Citer leur auteur n'est pas une politesse : c'est une
-    obligation de ces licences. Les photos des produits, elles, appartiennent
-    aux boutiques qui les téléversent.
+    <a href="https://commons.wikimedia.org" rel="noopener">Wikimedia Commons</a>,
+    sous licence libre. Les photos des produits, elles, appartiennent aux
+    boutiques qui les téléversent.
   </p>
 
-  <div class="carte large">
-    <table>
-      <tr><th>Rayon</th><th>Auteur</th><th>Licence</th><th>Source</th></tr>
+  <div class="bloc">
+    <div class="bloc-corps serre defile-x">
+    <table class="tableau">
+      <thead>
+        <tr>
+          <th scope="col">Rayon</th><th scope="col">Auteur</th>
+          <th scope="col">Licence</th><th scope="col">Source</th>
+        </tr>
+      </thead>
+      <tbody>
       @foreach($illustrations as $c)
         <tr>
           <td>
-            <a href="{{ route('rayon', $c) }}" style="color:var(--bleu)">{{ $c->nom }}</a>
+            <a href="{{ route('rayon', $c) }}" class="lien">{{ $c->nom }}</a>
             @if($c->parente)
-              <br><span style="color:var(--gris);font-size:.8rem">{{ $c->parente->nom }}</span>
+              <div class="mini secondaire">{{ $c->parente->nom }}</div>
             @endif
           </td>
           <td>{{ $c->image_auteur }}</td>
-          <td><span class="etiq etiq-gris">{{ $c->image_licence }}</span></td>
+          <td><span class="jeton jeton-neutre">{{ $c->image_licence }}</span></td>
           <td>
             @if($c->image_source)
               <a href="{{ $c->image_source }}" rel="nofollow noopener"
-                 style="color:var(--bleu);font-size:.82rem">page du fichier</a>
+                 style="color:var(--info-ink);font-size:.82rem">page du fichier</a>
             @endif
           </td>
         </tr>
       @endforeach
+          </tbody>
     </table>
+    </div>
   </div>
 
-  <p style="color:var(--gris);font-size:.86rem;margin-top:16px">
+  <p style="color:var(--ink-3);font-size:.86rem;margin-top:16px">
     Les licences citées — CC0, domaine public, CC BY et CC BY-SA — autorisent la
     réutilisation, y compris commerciale, à condition de créditer l'auteur.
     Les fichiers sous CC BY-SA imposent en outre que toute œuvre dérivée soit

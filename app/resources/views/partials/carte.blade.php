@@ -25,7 +25,7 @@
     @endif
   </div>
 
-  <div style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--gris)">
+  <div class="rang-serre mini secondaire" style="gap:var(--s2)">
     @if($p->nombre_avis)
       <span class="etoiles">{{ str_repeat('★', (int) round($p->noteSurCinq())) }}{{ str_repeat('☆', 5 - (int) round($p->noteSurCinq())) }}</span>
       <span>({{ $p->nombre_avis }})</span>
@@ -35,12 +35,12 @@
   </div>
 
   @if(! $p->enStock())
-    <span class="etiq etiq-rouge">Rupture de stock</span>
+    <span class="jeton jeton-grave">Rupture de stock</span>
   @elseif($p->stock <= 5)
     {{-- La rareté annoncée n'est pas un artifice ici : c'est le stock réel,
          et il change le comportement d'achat à juste titre. --}}
-    <span class="etiq etiq-orange">Plus que {{ $p->stock }} en stock</span>
+    <span class="jeton jeton-alerte">Plus que {{ $p->stock }} en stock</span>
   @elseif($p->boutique->officielle)
-    <span class="etiq etiq-officielle">Boutique officielle</span>
+    <span class="jeton jeton-info">Boutique officielle</span>
   @endif
 </a>

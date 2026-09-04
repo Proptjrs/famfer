@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Avertir;
 use App\Services\Commissions;
 use App\Services\PasseCommande;
+use App\Services\Statistiques;
 use App\Services\Veille;
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -27,6 +28,7 @@ class AdminController extends Controller
         private Avertir $avertir,
         private Commissions $commissions,
         private PasseCommande $passe,
+        private Statistiques $stats,
     ) {}
 
     public function tableau()
@@ -56,6 +58,12 @@ class AdminController extends Controller
             'aValider' => Boutique::with('utilisateur')->where('statut', 'en_attente')->get(),
             'meilleures' => Boutique::where('statut', 'active')
                 ->orderByDesc('note_sur_cent')->orderByDesc('nombre_avis')->limit(5)->get(),
+
+            'commissions' => $this->stats->commissionsMensuelles(),
+            'volumes' => $this->stats->ventesMensuelles(),
+            'variation' => $this->stats->variationDesVentes(),
+            'etats' => $this->stats->repartitionDesEtats(),
+            'litiges' => Commande::where('etat', 'litige')->count(),
         ]);
     }
 

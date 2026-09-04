@@ -11,6 +11,7 @@ use App\Models\Produit;
 use App\Services\Commissions;
 use App\Services\PasseCommande;
 use App\Services\Photos;
+use App\Services\Statistiques;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -29,6 +30,7 @@ class VendeurController extends Controller
         private PasseCommande $passe,
         private Photos $photos,
         private Commissions $commissions,
+        private Statistiques $stats,
     ) {}
 
     // ── Ouvrir une boutique ──────────────────────────────────────────────────
@@ -99,6 +101,21 @@ class VendeurController extends Controller
             'aTraiter' => $this->sesCommandes($b)
                 ->whereIn('etat', ['en_preparation', 'expediee', 'en_livraison'])
                 ->with('lignes')->orderBy('id')->limit(10)->get(),
+
+            // Ce qui manquait : de quoi comparer. Un chiffre d'affaires sans
+            // historique ne dit pas si le mois est bon, et un tableau de bord
+            // qui ne sert pas a decider est une page d'accueil deguisee.
+            'ventes' => $this->stats->ventesMensuelles($b),
+            'variation' => $this->stats->variationDesVentes($b),
+            'etats' => $this->stats->repartitionDesEtats($b),
+            'compte' => $this->commissions->pourBoutique($b),
+
+            // Les ruptures sont la seule chose du tableau de bord sur laquelle
+            // le vendeur peut agir tout de suite : elles meritent une liste,
+            // pas un compteur.
+            'ruptures' => Produit::where('boutique_id', $b->id)
+                ->where('actif', true)->where('stock', 0)
+                ->orderByDesc('nombre_ventes')->limit(6)->get(),
         ]);
     }
 

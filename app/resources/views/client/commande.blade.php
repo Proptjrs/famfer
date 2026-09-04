@@ -2,137 +2,222 @@
 @section('titre', 'Commande ' . $commande->reference)
 @section('contenu')
 
-<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
-  <h1 style="font-size:1.3rem">Commande {{ $commande->reference }}</h1>
+@php
+  $etapes = ['en_preparation' => 'Enregistrée', 'expediee' => 'Expédiée',
+             'en_livraison' => 'En livraison', 'livree' => 'Livrée'];
+  $rangs = array_keys($etapes);
+  $actuel = array_search($commande->etat, $rangs, true);
+@endphp
+
+@include('partials.entete', [
+  'titre' => 'Commande ' . $commande->reference,
+  'sous' => $commande->created_at->translatedFormat('\\P\\a\\s\\s\\é\\e \\l\\e j F Y \\à H\\hi')
+    . ' · ' . $commande->lignes->count() . ' article(s)',
+  'fil' => [
+    ['libelle' => 'Mes commandes', 'url' => route('mes-commandes')],
+    ['libelle' => $commande->reference],
+  ],
+  'actions' => $commande->annulableParLeClient()
+    ? '<form method="POST" action="' . route('commande.annuler', $commande) . '">'
+      . csrf_field() . '<button class="btn btn-clair">Annuler la commande</button></form>'
+    : null,
+])
+
+<div class="rang" style="margin-bottom:var(--s5)">
   @include('partials.etat', ['etat' => $commande->etat])
-  @if($commande->annulableParLeClient())
-    <form method="POST" action="{{ route('commande.annuler', $commande) }}" style="margin-left:auto">
-      @csrf <button class="btn btn-sm btn-clair">Annuler la commande</button>
-    </form>
+  @if($commande->paye)
+    <span class="jeton jeton-ok"><span class="point" aria-hidden="true"></span>Réglée</span>
   @endif
 </div>
 
 {{-- Le suivi, étape par étape : c'est la première chose qu'un client cherche
      après avoir commandé. Les états d'échec n'y figurent pas — ils sortent du
      parcours et méritent une phrase, pas une case. --}}
-@php
-  $etapes = ['en_preparation' => 'En préparation', 'expediee' => 'Expédiée',
-             'en_livraison' => 'En livraison', 'livree' => 'Livrée'];
-  $rangs = array_keys($etapes);
-  $actuel = array_search($commande->etat, $rangs, true);
-@endphp
-
 @if($actuel !== false)
-  <div class="carte" style="margin-bottom:14px;display:flex;gap:6px;flex-wrap:wrap">
-    @foreach($etapes as $cle => $mot)
-      @php $rang = array_search($cle, $rangs, true); @endphp
-      <div style="flex:1 1 120px;text-align:center;padding:10px 6px;border-radius:var(--r);
-                  background:{{ $rang <= $actuel ? 'var(--vert-pale)' : 'var(--fond)' }};
-                  color:{{ $rang <= $actuel ? 'var(--vert)' : 'var(--gris)' }};
-                  font-weight:600;font-size:.84rem">
-        {{ $rang <= $actuel ? '✓ ' : '' }}{{ $mot }}
-      </div>
-    @endforeach
+  <div class="bloc" style="margin-bottom:var(--s5)">
+    <div class="bloc-corps">
+      <ol class="etapes">
+        @foreach($etapes as $cle => $mot)
+          @php $rang = array_search($cle, $rangs, true); @endphp
+          <li class="{{ $rang < $actuel ? 'faite' : ($rang === $actuel ? 'ici' : '') }}">
+            <span>{{ $mot }}</span>
+            @if($rang === 0 && $commande->created_at)
+              <span class="mini secondaire">{{ $commande->created_at->format('d/m') }}</span>
+            @elseif($cle === 'expediee' && $commande->expediee_le)
+              <span class="mini secondaire">{{ $commande->expediee_le->format('d/m') }}</span>
+            @elseif($cle === 'livree' && $commande->livree_le)
+              <span class="mini secondaire">{{ $commande->livree_le->format('d/m') }}</span>
+            @endif
+          </li>
+        @endforeach
+      </ol>
+    </div>
   </div>
 @elseif($commande->motif)
-  <div class="avis avis-err">{{ $commande->motif }}</div>
-@endif
-
-{{-- Le code de remise.
-
-     C'est la piece maitresse du paiement a la livraison. Le vendeur ne peut
-     pas clore la commande sans ce code, que le client ne dicte qu'en recevant
-     le colis. Sans lui, le commercant declarerait seul une livraison dont il
-     est le beneficiaire. --}}
-@if($commande->code_livraison && in_array($commande->etat, ['expediee', 'en_livraison'], true))
-  <div class="carte" style="margin-bottom:14px;border:1px solid var(--orange);
-              display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+  <div class="message message-grave" style="margin-bottom:var(--s5)">
+    @include('partials.symbole', ['nom' => 'alerte', 'taille' => 18])
     <div>
-      <div style="color:var(--gris);font-size:.82rem">Votre code de remise</div>
-      <div class="mono" style="font-size:2rem;font-weight:800;letter-spacing:.14em">
-        {{ $commande->code_livraison }}
-      </div>
-    </div>
-    <div style="flex:1 1 260px;font-size:.88rem;color:var(--gris)">
-      Ne le donnez au livreur <strong>qu'au moment ou vous recevez le colis et
-      reglez les {{ number_format($commande->total, 0, ',', ' ') }} F</strong>.
-      C'est ce code qui prouve que la livraison a eu lieu.
+      <strong>
+        @if($commande->etat === 'refusee') Commande refusée à la livraison.
+        @elseif($commande->etat === 'annulee') Commande annulée.
+        @elseif($commande->etat === 'retournee') Retour enregistré.
+        @else {{ ucfirst($commande->etat) }}.
+        @endif
+      </strong>
+      {{ $commande->motif }}
     </div>
   </div>
-@endif
-
-{{-- Les deux recours du client. Le premier, parce que le vendeur peut oublier
-     de cloturer ; le second, parce qu'il peut mentir. --}}
-@if($commande->confirmableParLeClient())
-  <form method="POST" action="{{ route('commande.confirmer', $commande) }}"
-        style="margin-bottom:14px">
-    @csrf
-    <button class="btn">J'ai recu ma commande et je l'ai payee</button>
-    <span style="color:var(--gris);font-size:.85rem;margin-left:8px">
-      Votre confirmation cloture la vente, meme si le vendeur ne l'a pas fait.
-    </span>
-  </form>
-@endif
-
-@if($commande->contestableParLeClient())
-  <details class="carte" style="margin-bottom:14px">
-    <summary style="cursor:pointer;font-weight:600">
-      @if($commande->etat === 'refusee')
-        Ce refus est faux : j'ai bien recu et paye cette commande
-      @else
-        Je n'ai jamais recu cette commande
-      @endif
-    </summary>
-    <form method="POST" action="{{ route('commande.contester', $commande) }}"
-          style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-      @csrf
-      <input name="motif" required minlength="10" maxlength="300"
-             placeholder="Expliquez ce qui s'est passe (10 caracteres minimum)"
-             style="flex:1 1 320px;padding:8px 10px;border:1px solid var(--bord);
-                    border-radius:var(--r)">
-      <button class="btn btn-clair">Ouvrir un litige</button>
-    </form>
-    <p style="color:var(--gris);font-size:.84rem;margin:8px 0 0">
-      L'administration de FamFer examinera les deux versions et tranchera.
-    </p>
-  </details>
 @endif
 
 @if($commande->enLitige())
-  <div class="avis" style="background:var(--orange-pale);color:var(--orange-fonce)">
-    <strong>Litige en cours d'examen.</strong>
-    Ouvert par {{ $commande->litige_par === 'client' ? 'vous' : 'le vendeur' }}
-    le {{ $commande->litige_le?->format('d/m/Y') }} :
-    {{ $commande->litige_motif }}
+  <div class="message message-alerte" style="margin-bottom:var(--s5)">
+    @include('partials.symbole', ['nom' => 'balance', 'taille' => 18])
+    <div>
+      <strong>Litige en cours d'examen.</strong>
+      Ouvert par {{ $commande->litige_par === 'client' ? 'vous' : 'le vendeur' }}
+      le {{ $commande->litige_le?->translatedFormat('j F Y') }} :
+      « {{ $commande->litige_motif }} »
+      <div class="petit" style="margin-top:var(--s1)">
+        L'administration de FamFer examine les deux versions et tranchera.
+        Aucune commission n'est due tant que le litige dure.
+      </div>
+    </div>
   </div>
 @endif
 
-<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
-  <div style="flex:1 1 400px;min-width:0">
+<div class="deux-colonnes">
+  <div class="pile-lg">
+
+    {{-- Le code de remise.
+
+         C'est la pièce maîtresse du paiement à la livraison. Le vendeur ne peut
+         pas clore la commande sans ce code, que le client ne dicte qu'en
+         recevant le colis. Sans lui, le commerçant déclarerait seul une
+         livraison dont il est le bénéficiaire.
+
+         Il passe avant les articles : quand le livreur sonne, c'est la seule
+         chose que l'acheteur cherche sur cet écran. --}}
+    @if($commande->code_livraison && in_array($commande->etat, ['expediee', 'en_livraison'], true))
+      <div class="bloc" style="border-color:var(--brand);border-width:2px">
+        <div class="bloc-tete" style="background:var(--brand-soft);border-color:var(--brand-line)">
+          @include('partials.symbole', ['nom' => 'cadenas', 'taille' => 18])
+          <h2>Votre code de remise</h2>
+        </div>
+        <div class="bloc-corps rang" style="gap:var(--s6)">
+          <div>
+            <div class="chiffre" style="font-size:var(--t-4xl);font-weight:600;
+                        letter-spacing:.18em;line-height:1.1;color:var(--ink)">
+              {{ $commande->code_livraison }}
+            </div>
+          </div>
+          <p style="flex:1 1 16rem;color:var(--ink-2)">
+            Ne le donnez au livreur <strong>qu'au moment où vous recevez le colis
+            et réglez les {{ number_format($commande->total, 0, ',', ' ') }} F</strong>.
+            C'est lui qui prouve que la livraison a eu lieu — sans lui, le vendeur
+            ne peut pas clore la vente.
+          </p>
+        </div>
+        <div class="bloc-pied">
+          Ce code vous a aussi été envoyé par courriel et par SMS.
+        </div>
+      </div>
+    @endif
+
+    {{-- Les deux recours du client. Le premier parce que le vendeur peut oublier
+         de clôturer ; le second parce qu'il peut mentir. --}}
+    @if($commande->confirmableParLeClient())
+      <div class="bloc">
+        <div class="bloc-tete"><h2>Avez-vous reçu votre commande ?</h2></div>
+        <div class="bloc-corps pile">
+          <p class="secondaire">
+            Votre confirmation clôt la vente même si le vendeur ne l'a pas fait,
+            et vous permet de noter les articles reçus.
+          </p>
+          <div class="rang-sm">
+            <form method="POST" action="{{ route('commande.confirmer', $commande) }}">
+              @csrf
+              <button type="submit" class="btn">
+                @include('partials.symbole', ['nom' => 'coche', 'taille' => 17])
+                Oui, je l'ai reçue et payée
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    @endif
+
+    @if($commande->contestableParLeClient())
+      <details class="bloc">
+        <summary class="bloc-tete" style="cursor:pointer;list-style:none">
+          @include('partials.symbole', ['nom' => 'balance', 'taille' => 17])
+          <h2>
+            @if($commande->etat === 'refusee')
+              Ce refus est faux : j'ai bien reçu et payé
+            @else
+              Je n'ai jamais reçu cette commande
+            @endif
+          </h2>
+          <span class="chevron pousse">
+            @include('partials.symbole', ['nom' => 'chevron', 'taille' => 14])
+          </span>
+        </summary>
+        <div class="bloc-corps pile">
+          <form method="POST" action="{{ route('commande.contester', $commande) }}" class="pile">
+            @csrf
+            <div class="champ">
+              <label for="motif">Que s'est-il passé ?</label>
+              <textarea id="motif" name="motif" required minlength="10" maxlength="300"
+                        rows="3" placeholder="Décrivez ce qui s'est passé : date, heure, ce que vous avez remis au livreur…"
+                        @error('motif') aria-invalid="true" @enderror></textarea>
+              <div class="aide">Dix caractères au minimum. Soyez précis : c'est ce
+              texte que l'administration lira.</div>
+              @error('motif')<div class="erreur">{{ $message }}</div>@enderror
+            </div>
+            <div>
+              <button type="submit" class="btn btn-clair">Ouvrir un litige</button>
+            </div>
+          </form>
+          <p class="petit secondaire">
+            L'administration de FamFer examinera les deux versions et tranchera.
+            La contestation reste ouverte
+            {{ \App\Services\Veille::JOURS_DE_CONTESTATION }} jours après la
+            clôture de la commande.
+          </p>
+        </div>
+      </details>
+    @endif
 
     <div class="bloc">
-      <div class="bloc-tete"><h2>Les articles</h2></div>
-      <div class="bloc-corps">
+      <div class="bloc-tete">
+        <h2>Les articles</h2>
+        <span class="sous">{{ $commande->lignes->count() }} ligne(s)</span>
+      </div>
+      <div class="bloc-corps serre">
         @foreach($commande->lignes as $ligne)
-          <div style="display:flex;gap:12px;align-items:center;padding:10px 0;
-                      border-bottom:1px solid var(--bord);flex-wrap:wrap">
-            <div style="flex:0 0 60px;height:60px;background:var(--fond);border-radius:var(--r);
-                        display:flex;align-items:center;justify-content:center">
-              {{-- Le produit a pu être retiré depuis : on retombe sur le
-                   dessin plutôt que d'afficher un cadre vide. --}}
+          <div class="rang" style="padding:var(--s3) var(--s5);
+               {{ ! $loop->last ? 'border-bottom:1px solid var(--line)' : '' }}">
+            <div style="flex:0 0 3.5rem;height:3.5rem;background:var(--surface-2);
+                        border-radius:var(--r-sm);display:grid;place-items:center;
+                        overflow:hidden">
+              {{-- Le produit a pu être retiré depuis : on retombe sur le dessin
+                   plutôt que d'afficher un cadre vide. --}}
               @if($ligne->produit)
-                @include('partials.image', ['p' => $ligne->produit, 'taille' => 46])
+                @include('partials.image', ['p' => $ligne->produit, 'taille' => 44])
               @else
-                @include('partials.dessin', ['dessin' => 'defaut', 'taille' => 46])
+                @include('partials.dessin', ['dessin' => 'defaut', 'taille' => 44])
               @endif
             </div>
-            <div style="flex:1 1 180px;min-width:0">
-              <div style="font-weight:600">{{ $ligne->nom_produit }}</div>
-              <div style="color:var(--gris);font-size:.84rem">
+
+            <div style="flex:1 1 12rem;min-width:0">
+              <div style="font-weight:650">{{ $ligne->nom_produit }}</div>
+              <div class="petit secondaire chiffre">
                 {{ $ligne->quantite }} × {{ number_format($ligne->prix_unitaire, 0, ',', ' ') }} F
               </div>
             </div>
-            <strong class="mono">{{ number_format($ligne->montant, 0, ',', ' ') }} F</strong>
+
+            <strong class="chiffre pousse">
+              {{ number_format($ligne->montant, 0, ',', ' ') }} F
+            </strong>
           </div>
         @endforeach
       </div>
@@ -140,29 +225,50 @@
 
     @if($aNoter->isNotEmpty())
       <div class="bloc">
-        <div class="bloc-tete"><h2>Donnez votre avis</h2></div>
-        <div class="bloc-corps">
+        <div class="bloc-tete">
+          <h2>Donnez votre avis</h2>
+          <span class="sous">{{ $aNoter->count() }} article(s) à noter</span>
+        </div>
+        <div class="bloc-corps pile-lg">
           @foreach($aNoter as $ligne)
-            <form method="POST" action="{{ route('commande.noter', $commande) }}"
-                  style="padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--bord)">
+            <form method="POST" action="{{ route('commande.noter', $commande) }}" class="pile"
+                  style="{{ ! $loop->last ? 'padding-bottom:var(--s6);border-bottom:1px solid var(--line)' : '' }}">
               @csrf
               <input type="hidden" name="produit_id" value="{{ $ligne->produit_id }}">
-              <div style="font-weight:600;margin-bottom:8px">{{ $ligne->nom_produit }}</div>
+              <div style="font-weight:650">{{ $ligne->nom_produit }}</div>
+
               <div class="grille g2">
-                <div class="champ"><label>Votre note</label>
-                  <select name="note" required>
-                    <option value="5">5 étoiles — excellent</option>
-                    <option value="4">4 étoiles — bien</option>
-                    <option value="3">3 étoiles — correct</option>
-                    <option value="2">2 étoiles — décevant</option>
-                    <option value="1">1 étoile — mauvais</option>
-                  </select></div>
-                <div class="champ"><label>Titre <span style="color:var(--gris)">(facultatif)</span></label>
-                  <input name="titre" maxlength="160"></div>
+                <div class="champ">
+                  <label for="note{{ $ligne->produit_id }}">Votre note</label>
+                  <select id="note{{ $ligne->produit_id }}" name="note" required>
+                    <option value="5">★★★★★ — excellent</option>
+                    <option value="4">★★★★☆ — bien</option>
+                    <option value="3">★★★☆☆ — correct</option>
+                    <option value="2">★★☆☆☆ — décevant</option>
+                    <option value="1">★☆☆☆☆ — mauvais</option>
+                  </select>
+                </div>
+                <div class="champ">
+                  <label for="titre{{ $ligne->produit_id }}">
+                    Titre <span class="facultatif">— facultatif</span>
+                  </label>
+                  <input id="titre{{ $ligne->produit_id }}" name="titre" maxlength="160"
+                         placeholder="Conforme, livré vite…">
+                </div>
               </div>
-              <div class="champ"><label>Votre avis</label>
-                <textarea name="commentaire" rows="2" maxlength="1500"></textarea></div>
-              <button class="btn btn-sm">Publier mon avis</button>
+
+              <div class="champ">
+                <label for="com{{ $ligne->produit_id }}">Votre avis</label>
+                <textarea id="com{{ $ligne->produit_id }}" name="commentaire"
+                          rows="3" maxlength="1500"
+                          placeholder="La qualité, la conformité à la description, l'état à la livraison…"></textarea>
+                <div class="aide">
+                  Votre avis aide les prochains acheteurs — et seuls ceux qui ont
+                  reçu le produit peuvent en laisser un.
+                </div>
+              </div>
+
+              <div><button type="submit" class="btn btn-sm">Publier mon avis</button></div>
             </form>
           @endforeach
         </div>
@@ -170,48 +276,57 @@
     @endif
   </div>
 
-  <div class="carte" style="flex:0 0 292px">
-    <h2 style="margin-bottom:12px">Récapitulatif</h2>
+  <div class="pile-lg colonne-fixe">
 
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-      <span>Sous-total</span>
-      <span class="mono">{{ number_format($commande->sous_total, 0, ',', ' ') }} F</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-      <span>Livraison</span>
-      <span class="mono">
-        @if($commande->frais_livraison === 0)
-          offerte
+    <div class="bloc">
+      <div class="bloc-tete"><h2>Récapitulatif</h2></div>
+      <div class="bloc-corps pile-sm">
+        <div class="rang-serre">
+          <span class="secondaire">Sous-total</span>
+          <span class="chiffre pousse">{{ number_format($commande->sous_total, 0, ',', ' ') }} F</span>
+        </div>
+        <div class="rang-serre">
+          <span class="secondaire">Livraison</span>
+          <span class="chiffre pousse">
+            @if($commande->frais_livraison === 0)
+              <span style="color:var(--ok-ink);font-weight:650">offerte</span>
+            @else
+              {{ number_format($commande->frais_livraison, 0, ',', ' ') }} F
+            @endif
+          </span>
+        </div>
+        <hr style="margin-block:var(--s2)">
+        <div class="rang-serre">
+          <strong style="font-size:var(--t-md)">Total</strong>
+          <strong class="chiffre pousse" style="font-size:var(--t-xl)">
+            {{ number_format($commande->total, 0, ',', ' ') }} F
+          </strong>
+        </div>
+      </div>
+      <div class="bloc-pied">
+        @if($commande->paye)
+          Réglée en espèces à la livraison.
         @else
-          {{ number_format($commande->frais_livraison, 0, ',', ' ') }} F
+          À régler au livreur, en espèces, à la réception.
         @endif
-      </span>
-    </div>
-    <hr style="border:0;border-top:1px solid var(--bord);margin:10px 0">
-    <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:800">
-      <span>Total</span>
-      <span class="mono">{{ number_format($commande->total, 0, ',', ' ') }} F</span>
+      </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bord);font-size:.86rem">
-      <strong>Paiement</strong><br>
-      <span style="color:var(--gris-fonce)">
-        @if($commande->paiement === 'livraison')
-          À la livraison, en espèces
-        @else
-          {{ strtoupper($commande->paiement) }}
-        @endif
-      </span>
-      @if($commande->paye)
-        <br><span style="color:var(--vert);font-weight:600">Réglée</span>
-      @endif
-
-      <div style="margin-top:10px"><strong>Livraison</strong><br>
-        <span style="color:var(--gris-fonce)">
-          {{ $commande->destinataire }}<br>
-          {{ $commande->telephone }}<br>
-          {{ $commande->adresse_livraison }}
-        </span>
+    <div class="bloc">
+      <div class="bloc-tete"><h2>Livraison</h2></div>
+      <div class="bloc-corps pile-sm">
+        <div>
+          <div class="petit secondaire">Destinataire</div>
+          <div style="font-weight:650">{{ $commande->destinataire }}</div>
+        </div>
+        <div>
+          <div class="petit secondaire">Téléphone</div>
+          <div class="chiffre">{{ $commande->telephone }}</div>
+        </div>
+        <div>
+          <div class="petit secondaire">Adresse</div>
+          <div style="color:var(--ink-2)">{{ $commande->adresse_livraison }}</div>
+        </div>
       </div>
     </div>
   </div>

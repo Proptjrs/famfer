@@ -1,22 +1,34 @@
 @extends('layouts.app')
 @section('titre', 'Mot de passe oublié')
 @section('contenu')
-<div style="max-width:420px;margin:0 auto">
-  <h1>Mot de passe oublié</h1>
-  <p class="sous">
-    Indiquez l'adresse de votre compte. Vous recevrez un lien valable une heure.
-  </p>
-  <form method="POST" class="carte">
+
+<div class="page-etroite">
+  <div style="text-align:center;margin-bottom:var(--s6)">
+    <h1>Mot de passe oublié</h1>
+    <p class="secondaire" style="margin-top:var(--s1)">
+      Indiquez l'adresse de votre compte. Vous recevrez un lien valable une heure.
+    </p>
+  </div>
+
+  <form method="POST" class="bloc">
     @csrf
-    <div class="champ">
-      <label>Adresse électronique</label>
-      <input type="email" name="email" value="{{ old('email') }}" required autocomplete="email">
-      @error('email')<div class="erreur">{{ $message }}</div>@enderror
+    <div class="bloc-corps">
+      <div class="champ">
+        <label for="email">Adresse électronique</label>
+        <input id="email" type="email" name="email" value="{{ old('email') }}"
+               required autocomplete="email" autofocus
+               @error('email') aria-invalid="true" @enderror>
+        @error('email')<div class="erreur">{{ $message }}</div>@enderror
+      </div>
     </div>
-    <button class="btn" style="width:100%;justify-content:center">Envoyer le lien</button>
+    <div class="bloc-pied" style="background:var(--surface)">
+      <button type="submit" class="btn btn-lg btn-bloc">Envoyer le lien</button>
+    </div>
   </form>
-  <p style="text-align:center;margin-top:16px;color:var(--gris)">
-    <a href="{{ route('connexion') }}">Retour à la connexion</a>
+
+  <p class="secondaire" style="text-align:center;margin-top:var(--s5)">
+    <a href="{{ route('connexion') }}" class="lien">Retour à la connexion</a>
   </p>
 </div>
+
 @endsection

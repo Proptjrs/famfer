@@ -1,23 +1,31 @@
 {{--
   L'étiquette d'un état de commande, la même partout.
 
-  « Refusée » et « annulée » sont distinctes à dessein : l'une veut dire que le
-  colis est parti et que le client l'a repoussé à la porte — une tournée
-  perdue — l'autre qu'il s'est ravisé avant l'expédition.
+  Elle porte un mot ET un point coloré. La couleur seule ne distingue pas deux
+  états pour qui ne la perçoit pas, et huit pour cent des hommes sont dans ce
+  cas : le mot reste donc toujours présent, la couleur ne fait que l'accélérer.
 
-  Variable : $etat (string)
+  « Refusée » et « annulée » sont distinctes à dessein : l'une veut dire que le
+  colis est parti et que le client l'a repoussé à la porte — une tournée perdue —
+  l'autre qu'il s'est ravisé avant l'expédition.
+
+  Variables : $etat (string), $sobre (bool, défaut faux) — sans le point.
 --}}
 @php
-  [$mot, $classe] = match ($etat) {
-    'en_preparation' => ['En préparation', 'etiq-gris'],
-    'expediee' => ['Expédiée', 'etiq-orange'],
-    'en_livraison' => ['En cours de livraison', 'etiq-orange'],
-    'livree' => ['Livrée', 'etiq-vert'],
-    'refusee' => ['Refusée à la livraison', 'etiq-rouge'],
-    'annulee' => ['Annulée', 'etiq-gris'],
-    'retournee' => ['Retournée', 'etiq-rouge'],
-    'litige' => ['Litige en cours', 'etiq-orange'],
-    default => [$etat, 'etiq-gris'],
+  [$mot, $ton] = match ($etat) {
+    'en_preparation' => ['En préparation',        'neutre'],
+    'expediee'       => ['Expédiée',              'info'],
+    'en_livraison'   => ['En cours de livraison', 'info'],
+    'livree'         => ['Livrée',                'ok'],
+    'refusee'        => ['Refusée à la livraison','grave'],
+    'annulee'        => ['Annulée',               'neutre'],
+    'retournee'      => ['Retournée',             'grave'],
+    'litige'         => ['Litige en cours',       'alerte'],
+    default          => [$etat,                   'neutre'],
   };
 @endphp
-<span class="etiq {{ $classe }}">{{ $mot }}</span>
+
+<span class="jeton jeton-{{ $ton }}">
+  @unless($sobre ?? false)<span class="point" aria-hidden="true"></span>@endunless
+  {{ $mot }}
+</span>

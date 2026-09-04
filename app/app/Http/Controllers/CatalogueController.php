@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Boutique;
 use App\Models\Categorie;
 use App\Models\Produit;
 use App\Services\Catalogue;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /** L'accueil, la recherche, les rayons et la fiche produit. */
 class CatalogueController extends Controller
@@ -14,10 +16,24 @@ class CatalogueController extends Controller
 
     public function accueil()
     {
+        // Ces deux comptes etaient calcules dans la vue elle-meme, a chaque
+        // affichage de l'accueil. Une vue qui interroge la base est un defaut
+        // de couche autant qu'un cout : la page la plus visitee du site payait
+        // deux requetes pour deux nombres qui bougent une fois par jour.
+        [$nbProduits, $nbBoutiques] = Cache::remember(
+            'accueil.compteurs', now()->addMinutes(30),
+            fn () => [
+                Produit::where('actif', true)->count(),
+                Boutique::where('statut', 'active')->count(),
+            ]
+        );
+
         return view('accueil', [
-            'promotions' => $this->catalogue->enPromotion(8),
-            'populaires' => $this->catalogue->lesPlusVendus(8),
+            'promotions' => $this->catalogue->enPromotion(10),
+            'populaires' => $this->catalogue->lesPlusVendus(10),
             'rayons' => Categorie::rayonsAvecCompte(),
+            'nbProduits' => $nbProduits,
+            'nbBoutiques' => $nbBoutiques,
         ]);
     }
 

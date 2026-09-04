@@ -214,4 +214,42 @@ class CommandeTest extends TestCase
         $this->assertNotSame($a->reference, $b->reference);
         $this->assertMatchesRegularExpression('/^FF-\d{4}-\d{6}$/', $a->reference);
     }
+
+    /**
+     * L'application n'accepte que le paiement qu'elle sait mener à terme.
+     *
+     * « wave » et « om » étaient acceptés par le formulaire de validation, sans
+     * qu'aucun code ne les traite : la commande était livrée, « paye » restait
+     * faux pour toujours — rien ne le remettait jamais à vrai — et la commission
+     * devenait pourtant exigible. Le vendeur devait donc une commission sur un
+     * argent qu'il n'avait peut-être jamais encaissé.
+     *
+     * Une promesse que le logiciel ne tient pas coûte plus cher qu'une option
+     * absente. Cet essai empêche de la réintroduire par distraction.
+     */
+    public function test_seul_le_paiement_a_la_livraison_est_accepte(): void
+    {
+        $client = User::create([
+            'name' => 'Awa BA', 'email' => 'awa-paiement@essai.sn',
+            'password' => 'motdepasse', 'role' => 'client', 'telephone' => '+221 77 000 00 00',
+        ]);
+        $adresse = Adresse::create([
+            'utilisateur_id' => $client->id, 'destinataire' => 'Awa BA',
+            'telephone' => '+221 77 000 00 00', 'region' => 'Dakar',
+            'ville' => 'Dakar', 'quartier' => 'Grand Yoff', 'par_defaut' => true,
+        ]);
+
+        foreach (['wave', 'om', 'carte'] as $refuse) {
+            app(Panier::class)->vider();
+            app(Panier::class)->ajouter($this->produit->fresh(), 1);
+
+            $this->actingAs($client)->post(route('commande.valider'), [
+                'adresse_id' => $adresse->id,
+                'paiement' => $refuse,
+            ])->assertSessionHasErrors('paiement');
+        }
+
+        $this->assertSame(0, Commande::where('utilisateur_id', $client->id)->count(),
+            'Aucune commande ne doit naître d\'un mode de paiement non traité.');
+    }
 }

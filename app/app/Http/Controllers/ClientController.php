@@ -58,7 +58,15 @@ class ClientController extends Controller
             'ville' => 'required_without:adresse_id|string|max:80',
             'quartier' => 'required_without:adresse_id|string|max:120',
             'repere' => 'nullable|string|max:200',
-            'paiement' => 'required|in:livraison,wave,om',
+            // Wave et Orange Money etaient acceptes ici, sans qu'aucun code
+            // ne les traite : une commande ainsi payee etait livree, jamais
+            // marquee payee, et generait pourtant une commission que le vendeur
+            // devait sur un argent qu'il n'avait peut-etre jamais encaisse.
+            // Tant qu'aucun contrat marchand n'existe avec l'operateur, la
+            // seule valeur acceptee est celle que le logiciel sait mener a
+            // terme. Une promesse que l'application ne tient pas coute plus
+            // cher qu'une option absente.
+            'paiement' => 'required|in:livraison',
         ]);
 
         $adresse = isset($d['adresse_id'])

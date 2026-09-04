@@ -2,136 +2,195 @@
 @section('titre', 'Mes ventes')
 @section('contenu')
 
-<h1>Mes ventes</h1>
-<p style="color:var(--gris);margin-bottom:14px">
-  Tout ce qui est passé par votre boutique, y compris ce qui n'a pas abouti.
-</p>
-
 @php
   $libelles = [
     'en_preparation' => 'À expédier', 'expediee' => 'Expédiées',
     'en_livraison' => 'En livraison', 'livree' => 'Livrées',
-    'refusee' => 'Refusées', 'annulee' => 'Annulées', 'retournee' => 'Retournées',
+    'litige' => 'Litiges', 'refusee' => 'Refusées',
+    'annulee' => 'Annulées', 'retournee' => 'Retournées',
   ];
 @endphp
 
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-  <a href="{{ route('vendeur.commandes') }}"
-     class="btn btn-sm {{ $etatFiltre ? 'btn-clair' : '' }}">
-    Toutes <span style="opacity:.75">{{ $parEtat->sum() }}</span>
+@include('partials.entete', [
+  'titre' => 'Mes ventes',
+  'sous' => 'Tout ce qui est passé par votre boutique, y compris ce qui n\'a pas abouti.',
+  'fil' => [
+    ['libelle' => 'Ma boutique', 'url' => route('vendeur.tableau')],
+    ['libelle' => 'Mes ventes'],
+  ],
+  'actions' => '<a href="' . route('vendeur.commissions') . '" class="btn btn-clair">Ma commission</a>',
+])
+
+{{-- Les états en onglets plutôt qu'en boutons. Une rangée de boutons pleins ne
+     disait pas lequel était actif ; l'onglet souligné le dit sans ambiguïté, et
+     « aria-current » le dit aussi aux lecteurs d'écran. --}}
+<nav class="onglets" style="margin-bottom:var(--s5)" aria-label="Filtrer par état">
+  <a href="{{ route('vendeur.commandes') }}" @if(! $etatFiltre) aria-current="page" @endif>
+    Toutes <span class="nb">{{ $parEtat->sum() }}</span>
   </a>
   @foreach($libelles as $cle => $mot)
     @continue(! isset($parEtat[$cle]))
     <a href="{{ route('vendeur.commandes', ['etat' => $cle]) }}"
-       class="btn btn-sm {{ $etatFiltre === $cle ? '' : 'btn-clair' }}">
-      {{ $mot }} <span style="opacity:.75">{{ $parEtat[$cle] }}</span>
+       @if($etatFiltre === $cle) aria-current="page" @endif>
+      {{ $mot }} <span class="nb">{{ $parEtat[$cle] }}</span>
     </a>
   @endforeach
-</div>
+</nav>
 
 @forelse($liste as $c)
   @php $miennes = $c->lignes->where('boutique_id', $boutique->id); @endphp
-  <div class="carte" style="margin-bottom:12px">
-    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <strong>{{ $c->reference }}</strong>
+
+  <div class="bloc" style="margin-bottom:var(--s4)">
+    <div class="bloc-tete">
+      <strong class="chiffre">{{ $c->reference }}</strong>
       @include('partials.etat', ['etat' => $c->etat])
-      <span style="color:var(--gris);font-size:.85rem">
+      <span class="sous">
         {{ $c->utilisateur->name }} · {{ $c->created_at->translatedFormat('j M Y') }}
       </span>
-      <span class="mono" style="margin-left:auto;font-weight:700">
+      <strong class="chiffre pousse" style="font-size:var(--t-md)">
         {{ number_format($miennes->sum('montant'), 0, ',', ' ') }} F
-      </span>
+      </strong>
     </div>
 
-    <div style="color:var(--gris);font-size:.86rem;margin-top:6px">
-      @foreach($miennes as $ligne)
-        {{ $ligne->quantite }} × {{ $ligne->nom_produit }}<br>
-      @endforeach
-    </div>
+    <div class="bloc-corps pile">
+      <div class="pile-sm">
+        @foreach($miennes as $ligne)
+          <div class="rang-serre petit">
+            <span class="chiffre secondaire" style="flex:none">{{ $ligne->quantite }} ×</span>
+            <span class="tronque-1">{{ $ligne->nom_produit }}</span>
+            <span class="chiffre pousse secondaire">
+              {{ number_format($ligne->montant, 0, ',', ' ') }} F
+            </span>
+          </div>
+        @endforeach
+      </div>
 
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;
-                padding-top:10px;border-top:1px solid var(--bord)">
-      <span style="color:var(--gris);font-size:.85rem">
-        {{ $c->destinataire }} · {{ $c->telephone }} · {{ $c->adresse_livraison }}
-      </span>
+      <div class="rang" style="padding-top:var(--s3);border-top:1px solid var(--line)">
+        <div class="petit secondaire" style="flex:1 1 16rem;min-width:0">
+          <div style="font-weight:650;color:var(--ink-2)">{{ $c->destinataire }}</div>
+          <div class="chiffre">{{ $c->telephone }}</div>
+          <div>{{ $c->adresse_livraison }}</div>
+        </div>
 
-      @if($c->etat === 'en_preparation')
-        <form method="POST" action="{{ route('vendeur.expedier', $c) }}" style="margin-left:auto">
-          @csrf <button class="btn btn-sm">Expédier</button>
-        </form>
-      @elseif(in_array($c->etat, ['expediee', 'en_livraison']))
-        {{-- Le code de remise, dicté par le client au moment où il reçoit et
-             règle. Sans lui, le vendeur déclarerait seul une livraison dont il
-             est le bénéficiaire : il pourrait encaisser puis annoncer un refus
-             pour garder l'argent sans payer de commission. --}}
-        <form method="POST" action="{{ route('vendeur.livrer', $c) }}"
-              style="margin-left:auto;display:flex;gap:6px;align-items:center">
-          @csrf
-          <input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required
-                 placeholder="Code client"
-                 class="mono"
-                 style="width:104px;padding:6px 8px;border:1px solid var(--bord);
-                        border-radius:var(--r);letter-spacing:.1em">
-          <button class="btn btn-sm btn-vert">Marquer livrée</button>
-        </form>
-      @elseif($c->etat === 'litige')
-        <span class="etiq etiq-orange" style="margin-left:auto">
-          Litige — l'administration examine
-        </span>
-      @elseif($c->motif)
-        <span style="color:var(--rouge);font-size:.85rem;margin-left:auto">{{ $c->motif }}</span>
-      @endif
-    </div>
+        @if($c->etat === 'en_preparation')
+          <form method="POST" action="{{ route('vendeur.expedier', $c) }}" class="pousse">
+            @csrf
+            <button type="submit" class="btn btn-sm">
+              @include('partials.symbole', ['nom' => 'camion', 'taille' => 15])
+              Expédier
+            </button>
+          </form>
 
-      {{-- Le refus a la porte est le risque propre au paiement a la livraison :
-           la tournee a eu lieu et n'a rien rapporte. Il doit s'enregistrer, sans
-           quoi le taux de refus des tableaux de bord reste a zero quoi qu'il
+        @elseif(in_array($c->etat, ['expediee', 'en_livraison']))
+          {{-- Le code de remise, dicté par le client au moment où il reçoit et
+               règle. Sans lui, le vendeur déclarerait seul une livraison dont il
+               est le bénéficiaire : il pourrait encaisser puis annoncer un refus
+               pour garder l'argent sans payer de commission. --}}
+          <form method="POST" action="{{ route('vendeur.livrer', $c) }}"
+                class="rang-serre pousse" style="gap:var(--s2)">
+            @csrf
+            <label for="code{{ $c->id }}" class="visuellement-cache">
+              Code de remise dicté par le client</label>
+            <input id="code{{ $c->id }}" name="code" inputmode="numeric"
+                   pattern="[0-9]{6}" maxlength="6" required class="chiffre"
+                   placeholder="Code client" autocomplete="off"
+                   style="width:7rem;letter-spacing:.1em;text-align:center">
+            <button type="submit" class="btn btn-sm btn-ok">Marquer livrée</button>
+          </form>
+
+        @elseif($c->etat === 'litige')
+          <span class="jeton jeton-alerte pousse">
+            @include('partials.symbole', ['nom' => 'balance', 'taille' => 12])
+            L'administration examine le dossier
+          </span>
+
+        @elseif($c->motif)
+          <span class="petit pousse" style="color:var(--grave-ink);text-align:right;
+                       max-width:22rem">{{ $c->motif }}</span>
+        @endif
+      </div>
+
+      {{-- Le refus à la porte est le risque propre au paiement à la livraison :
+           la tournée a eu lieu et n'a rien rapporté. Il doit s'enregistrer, sans
+           quoi le taux de refus des tableaux de bord reste à zéro quoi qu'il
            arrive. --}}
       @if(in_array($c->etat, ['expediee', 'en_livraison']))
-        <details style="margin-top:10px">
-          <summary style="cursor:pointer;color:var(--rouge);font-size:.86rem;font-weight:600">
-            Le client a refuse le colis
+        <details>
+          <summary style="cursor:pointer;color:var(--grave-ink);font-size:var(--t-xs);
+                          font-weight:650;padding:var(--s1) 0">
+            Le client a refusé le colis
           </summary>
           <form method="POST" action="{{ route('vendeur.refuser', $c) }}"
-                style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:flex-end">
+                class="rang" style="margin-top:var(--s3);align-items:flex-end">
             @csrf
-            <div style="flex:1 1 260px">
-              <label>Pourquoi</label>
-              <input name="motif" required maxlength="200"
-                     placeholder="Absent, a change d'avis, marchandise non conforme...">
+            <div class="champ" style="flex:1 1 18rem;margin:0">
+              <label for="refus{{ $c->id }}">Pourquoi</label>
+              <input id="refus{{ $c->id }}" name="motif" required maxlength="200"
+                     placeholder="Absent après deux passages, a changé d'avis, marchandise non conforme…">
             </div>
-            <button class="btn btn-sm btn-rouge">Enregistrer le refus</button>
+            <button type="submit" class="btn btn-sm btn-grave">Enregistrer le refus</button>
           </form>
+          <p class="mini secondaire" style="margin-top:var(--s2)">
+            Le stock revient en rayon et vous ne devez aucune commission. Le client
+            pourra contester ce refus s'il estime avoir reçu le colis.
+          </p>
         </details>
+
       @elseif($c->etat === 'livree')
-        <details style="margin-top:10px">
-          <summary style="cursor:pointer;color:var(--gris-fonce);font-size:.86rem">
+        <details>
+          <summary style="cursor:pointer;color:var(--ink-2);font-size:var(--t-xs);
+                          font-weight:650;padding:var(--s1) 0">
             Enregistrer un retour
           </summary>
           <form method="POST" action="{{ route('vendeur.retourner', $c) }}"
-                style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:flex-end">
+                class="rang" style="margin-top:var(--s3);align-items:flex-end">
             @csrf
-            <div style="flex:1 1 260px">
-              <label>Motif du retour</label>
-              <input name="motif" required maxlength="200"
-                     placeholder="Article non conforme, dimension erronee...">
+            <div class="champ" style="flex:1 1 18rem;margin:0">
+              <label for="retour{{ $c->id }}">Motif du retour</label>
+              <input id="retour{{ $c->id }}" name="motif" required maxlength="200"
+                     placeholder="Article non conforme, dimension erronée…">
             </div>
-            <button class="btn btn-sm btn-clair">Enregistrer le retour</button>
+            <button type="submit" class="btn btn-sm btn-clair">Enregistrer le retour</button>
+          </form>
+        </details>
+
+      @elseif(in_array($c->etat, ['expediee', 'en_livraison', 'livree'], true))
+        <details>
+          <summary style="cursor:pointer;color:var(--ink-2);font-size:var(--t-xs);
+                          font-weight:650;padding:var(--s1) 0">
+            Le client refuse de donner son code
+          </summary>
+          <form method="POST" action="{{ route('vendeur.contester', $c) }}"
+                class="rang" style="margin-top:var(--s3);align-items:flex-end">
+            @csrf
+            <div class="champ" style="flex:1 1 18rem;margin:0">
+              <label for="lit{{ $c->id }}">Que s'est-il passé ?</label>
+              <input id="lit{{ $c->id }}" name="motif" required minlength="10" maxlength="300"
+                     placeholder="Colis remis et payé, le client refuse de communiquer son code…">
+            </div>
+            <button type="submit" class="btn btn-sm btn-clair">Ouvrir un litige</button>
           </form>
         </details>
       @endif
+    </div>
   </div>
 @empty
-  <div class="carte vide">
-    @if($etatFiltre)
-      Aucune commande dans cet état.
-      <a href="{{ route('vendeur.commandes') }}">Voir toutes</a>
-    @else
-      Aucune vente pour l'instant.
-    @endif
+  <div class="bloc">
+    @include('partials.vide', [
+      'icone' => $etatFiltre ? 'filtre' : 'boite',
+      'titre' => $etatFiltre ? 'Aucune commande dans cet état' : 'Aucune vente pour l\'instant',
+      'texte' => $etatFiltre
+        ? 'Changez de filtre pour voir le reste de vos ventes.'
+        : 'Vos ventes apparaîtront ici. Vous serez prévenu par courriel dès qu\'une commande arrive.',
+      'action' => $etatFiltre
+        ? '<a href="' . route('vendeur.commandes') . '" class="btn btn-clair">Voir toutes mes ventes</a>'
+        : '<a href="' . route('vendeur.produit.nouveau') . '" class="btn">Ajouter un produit</a>',
+    ])
   </div>
 @endforelse
 
-<div style="margin-top:18px">{{ $liste->links() }}</div>
+@if($liste->hasPages())
+  <div style="margin-top:var(--s6)">{{ $liste->links() }}</div>
+@endif
 
 @endsection

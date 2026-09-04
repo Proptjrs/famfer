@@ -2,144 +2,228 @@
 @section('titre', 'Valider ma commande')
 @section('contenu')
 
-<h1>Valider ma commande</h1>
+@include('partials.entete', [
+  'titre' => 'Valider ma commande',
+  'sous' => 'Dernière étape. Rien n\'est prélevé : vous paierez au livreur, en espèces, à la réception.',
+  'fil' => [
+    ['libelle' => 'Accueil', 'url' => route('accueil')],
+    ['libelle' => 'Mon panier', 'url' => route('panier')],
+    ['libelle' => 'Valider'],
+  ],
+])
 
-<form method="POST" action="{{ route('commande.valider') }}"
-      style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:14px">
+<form method="POST" action="{{ route('commande.valider') }}" class="deux-colonnes">
   @csrf
 
-  <div style="flex:1 1 420px;min-width:0">
+  <div class="pile-lg">
 
     <div class="bloc">
-      <div class="bloc-tete"><h2>Où livrer</h2></div>
-      <div class="bloc-corps">
+      <div class="bloc-tete">
+        <h2>Où livrer</h2>
+        <span class="sous">le livreur appellera ce numéro</span>
+      </div>
+      <div class="bloc-corps pile">
         @forelse($adresses as $a)
-          <label style="display:flex;gap:10px;padding:12px;border:1px solid var(--bord);
-                        border-radius:var(--r);margin-bottom:8px;font-weight:400;cursor:pointer">
+          <label class="case" style="padding:var(--s3) var(--s4);
+                 border:1px solid var(--line);border-radius:var(--r-sm);
+                 background:var(--surface)">
             <input type="radio" name="adresse_id" value="{{ $a->id }}"
-                   @checked($loop->first) style="width:auto;margin-top:3px"
-                   data-region="{{ $a->region }}">
-            <span>
-              <strong>{{ $a->destinataire }}</strong> · {{ $a->telephone }}
-              @if($a->par_defaut)<span class="etiq etiq-gris">par défaut</span>@endif
-              <br><span style="color:var(--gris-fonce)">{{ $a->enUneLigne() }}</span>
+                   @checked($loop->first) data-region="{{ $a->region }}">
+            <span style="flex:1">
+              <span class="rang-sm">
+                <strong style="color:var(--ink)">{{ $a->destinataire }}</strong>
+                <span class="chiffre petit secondaire">{{ $a->telephone }}</span>
+                @if($a->par_defaut)<span class="jeton jeton-neutre">par défaut</span>@endif
+              </span>
+              <span class="petit secondaire" style="display:block">{{ $a->enUneLigne() }}</span>
             </span>
           </label>
         @empty
-          <p style="color:var(--gris);margin-bottom:12px">
-            Aucune adresse enregistrée. Renseignez-la ci-dessous.
+          <p class="petit secondaire">
+            Aucune adresse enregistrée. Renseignez-la ci-dessous : elle sera
+            conservée pour vos prochaines commandes.
           </p>
         @endforelse
 
-        <details @if($adresses->isEmpty()) open @endif style="margin-top:8px">
-          <summary style="cursor:pointer;font-weight:600;color:var(--bleu)">
+        <details @if($adresses->isEmpty()) open @endif>
+          <summary style="cursor:pointer;font-weight:650;color:var(--brand-strong);
+                          padding:var(--s2) 0">
             Livrer à une nouvelle adresse
           </summary>
-          <div style="margin-top:12px">
+
+          <div class="pile" style="margin-top:var(--s4)">
             <div class="grille g2">
-              <div class="champ"><label>Destinataire</label>
-                <input name="destinataire" value="{{ old('destinataire', auth()->user()->name) }}">
-                @error('destinataire')<div class="erreur">{{ $message }}</div>@enderror</div>
-              <div class="champ"><label>Téléphone</label>
-                <input name="telephone" value="{{ old('telephone', auth()->user()->telephone) }}">
-                @error('telephone')<div class="erreur">{{ $message }}</div>@enderror</div>
+              <div class="champ">
+                <label for="destinataire">Destinataire</label>
+                <input id="destinataire" name="destinataire"
+                       value="{{ old('destinataire', auth()->user()->name) }}"
+                       @error('destinataire') aria-invalid="true" @enderror>
+                @error('destinataire')<div class="erreur">{{ $message }}</div>@enderror
+              </div>
+              <div class="champ">
+                <label for="telephone">Téléphone</label>
+                <input id="telephone" name="telephone" type="tel" class="chiffre"
+                       value="{{ old('telephone', auth()->user()->telephone) }}"
+                       placeholder="77 123 45 67"
+                       @error('telephone') aria-invalid="true" @enderror>
+                <div class="aide">Le livreur vous appellera à ce numéro.</div>
+                @error('telephone')<div class="erreur">{{ $message }}</div>@enderror
+              </div>
             </div>
+
             <div class="grille g2">
-              <div class="champ"><label>Région</label>
-                <select name="region" id="region">
+              <div class="champ">
+                <label for="region">Région</label>
+                <select id="region" name="region">
                   @foreach($regions as $r)
                     <option value="{{ $r }}" @selected(old('region') === $r)>{{ $r }}</option>
                   @endforeach
-                  <option value="Autre">Autre région</option>
-                </select></div>
-              <div class="champ"><label>Ville</label>
-                <input name="ville" value="{{ old('ville') }}"></div>
+                  <option value="Autre" @selected(old('region') === 'Autre')>Autre région</option>
+                </select>
+                <div class="aide">Elle détermine les frais de livraison.</div>
+              </div>
+              <div class="champ">
+                <label for="ville">Ville</label>
+                <input id="ville" name="ville" value="{{ old('ville') }}"
+                       @error('ville') aria-invalid="true" @enderror>
+                @error('ville')<div class="erreur">{{ $message }}</div>@enderror
+              </div>
             </div>
-            <div class="champ"><label>Quartier</label>
-              <input name="quartier" value="{{ old('quartier') }}"></div>
-            <div class="champ"><label>Repère <span style="color:var(--gris)">(facultatif)</span></label>
-              <input name="repere" value="{{ old('repere') }}"
-                     placeholder="En face de la pharmacie, portail bleu…"></div>
+
+            <div class="champ">
+              <label for="quartier">Quartier</label>
+              <input id="quartier" name="quartier" value="{{ old('quartier') }}"
+                     @error('quartier') aria-invalid="true" @enderror>
+              @error('quartier')<div class="erreur">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="champ">
+              <label for="repere">Repère <span class="facultatif">— facultatif</span></label>
+              <input id="repere" name="repere" value="{{ old('repere') }}"
+                     placeholder="En face de la pharmacie, portail bleu…">
+              <div class="aide">
+                Beaucoup d'adresses au Sénégal se trouvent au repère plutôt qu'au
+                numéro. Cette ligne évite un appel au livreur.
+              </div>
+            </div>
           </div>
         </details>
       </div>
     </div>
 
     <div class="bloc">
-      <div class="bloc-tete"><h2>Comment payer</h2></div>
-      <div class="bloc-corps">
-        <label style="display:flex;gap:10px;padding:12px;border:1px solid var(--bord);
-                      border-radius:var(--r);margin-bottom:8px;font-weight:400;cursor:pointer">
-          <input type="radio" name="paiement" value="livraison" checked style="width:auto;margin-top:3px">
-          <span>
-            <strong>À la livraison, en espèces</strong>
-            <br><span style="color:var(--gris-fonce)">
-              Vous réglez au livreur, au moment de recevoir votre commande.
+      <div class="bloc-tete">
+        <h2>Comment payer</h2>
+        <span class="sous">après avoir vu le colis</span>
+      </div>
+      <div class="bloc-corps pile">
+        <label class="case" style="padding:var(--s4);border:1px solid var(--brand-line);
+               border-radius:var(--r-sm);background:var(--brand-soft)">
+          <input type="radio" name="paiement" value="livraison" checked>
+          <span style="flex:1">
+            <strong style="color:var(--ink)">À la livraison, en espèces</strong>
+            <span class="petit secondaire" style="display:block">
+              Vous réglez au livreur au moment de recevoir la commande, et vous
+              lui donnez alors le code de remise à six chiffres qui vous sera
+              envoyé. C'est ce code qui atteste la livraison.
             </span>
           </span>
         </label>
-        <label style="display:flex;gap:10px;padding:12px;border:1px solid var(--bord);
-                      border-radius:var(--r);margin-bottom:8px;font-weight:400;cursor:pointer">
-          <input type="radio" name="paiement" value="wave" style="width:auto;margin-top:3px">
-          <span><strong>Wave</strong>
-            <br><span style="color:var(--gris-fonce)">Vous serez contacté pour le règlement.</span></span>
-        </label>
-        <label style="display:flex;gap:10px;padding:12px;border:1px solid var(--bord);
-                      border-radius:var(--r);font-weight:400;cursor:pointer">
-          <input type="radio" name="paiement" value="om" style="width:auto;margin-top:3px">
-          <span><strong>Orange Money</strong>
-            <br><span style="color:var(--gris-fonce)">Vous serez contacté pour le règlement.</span></span>
-        </label>
+
+        {{-- Wave et Orange Money étaient proposés et acceptés par le formulaire,
+             alors qu'aucun code ne les traite : la commande était livrée, jamais
+             marquée payée, et générait pourtant une commission que le vendeur
+             devait sur un argent qu'il n'avait peut-être jamais encaissé.
+             Ils restent affichés — la demande existe — mais désactivés tant
+             qu'aucun contrat marchand n'est signé avec l'opérateur. --}}
+        <div class="case" style="padding:var(--s4);border:1px dashed var(--line-strong);
+             border-radius:var(--r-sm);opacity:.72">
+          <input type="radio" disabled aria-disabled="true">
+          <span style="flex:1">
+            <span class="rang-sm">
+              <strong style="color:var(--ink-2)">Wave et Orange Money</strong>
+              <span class="jeton jeton-neutre">bientôt</span>
+            </span>
+            <span class="petit secondaire" style="display:block">
+              Le paiement mobile suppose un contrat marchand avec l'opérateur.
+              Tant qu'il n'est pas signé, nous préférons ne pas le proposer
+              plutôt que de vous promettre un règlement que nous ne savons pas
+              encore encaisser.
+            </span>
+          </span>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="carte" style="flex:0 0 300px;position:sticky;top:150px">
-    <h2 style="margin-bottom:12px">Ma commande</h2>
+  <div class="colonne-fixe">
+    <div class="bloc">
+      <div class="bloc-tete"><h2>Ma commande</h2></div>
+      <div class="bloc-corps pile">
 
-    @foreach($contenu as $ligne)
-      <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:7px;font-size:.86rem">
-        <span>{{ $ligne['quantite'] }} × {{ Str::limit($ligne['produit']->nom, 30) }}</span>
-        <span class="mono">{{ number_format($ligne['montant'], 0, ',', ' ') }} F</span>
-      </div>
-    @endforeach
-
-    <hr style="border:0;border-top:1px solid var(--bord);margin:12px 0">
-
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-      <span>Sous-total</span>
-      <strong class="mono">{{ number_format($sousTotal, 0, ',', ' ') }} F</strong>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px;color:var(--gris-fonce)">
-      <span>Livraison</span>
-      <span class="mono">
-        @if($fraisParRegion->every(fn ($f) => $f === 0))
-          offerte
-        @else
-          selon la région
-        @endif
-      </span>
-    </div>
-
-    <div style="background:var(--fond);border-radius:var(--r);padding:10px;
-                font-size:.82rem;color:var(--gris-fonce);margin:10px 0">
-      @foreach($fraisParRegion as $region => $frais)
-        <div style="display:flex;justify-content:space-between">
-          <span>{{ $region }}</span>
-          <span class="mono">{{ $frais === 0 ? 'offerte' : number_format($frais, 0, ',', ' ') . ' F' }}</span>
+        <div class="pile-sm">
+          @foreach($contenu as $ligne)
+            <div class="rang-serre petit">
+              <span class="chiffre secondaire" style="flex:none">{{ $ligne['quantite'] }} ×</span>
+              <span class="tronque-1">{{ $ligne['produit']->nom }}</span>
+              <span class="chiffre pousse">{{ number_format($ligne['montant'], 0, ',', ' ') }} F</span>
+            </div>
+          @endforeach
         </div>
-      @endforeach
-      <div style="display:flex;justify-content:space-between">
-        <span>Autre région</span>
-        <span class="mono">{{ $fraisAutre === 0 ? 'offerte' : number_format($fraisAutre, 0, ',', ' ') . ' F' }}</span>
+
+        <hr>
+
+        <div class="rang-serre">
+          <span>Sous-total</span>
+          <strong class="chiffre pousse">{{ number_format($sousTotal, 0, ',', ' ') }} F</strong>
+        </div>
+
+        <div class="rang-serre secondaire">
+          <span>Livraison</span>
+          <span class="chiffre pousse">
+            @if($fraisParRegion->every(fn ($f) => $f === 0))
+              offerte
+            @else
+              selon la région
+            @endif
+          </span>
+        </div>
+
+        {{-- Le barème complet, plutôt qu'un montant qui apparaîtrait après
+             validation. Un frais découvert trop tard fait abandonner le panier
+             — et il fait surtout perdre confiance. --}}
+        <details style="border:1px solid var(--line);border-radius:var(--r-sm);
+                 padding:var(--s3) var(--s4)">
+          <summary style="cursor:pointer;font-weight:650;font-size:var(--t-xs)">
+            Le barème par région
+          </summary>
+          <div class="pile-sm" style="margin-top:var(--s3)">
+            @foreach($fraisParRegion as $region => $frais)
+              <div class="rang-serre petit">
+                <span class="secondaire">{{ $region }}</span>
+                <span class="chiffre pousse">
+                  {{ $frais === 0 ? 'offerte' : number_format($frais, 0, ',', ' ') . ' F' }}
+                </span>
+              </div>
+            @endforeach
+            <div class="rang-serre petit">
+              <span class="secondaire">Autre région</span>
+              <span class="chiffre pousse">
+                {{ $fraisAutre === 0 ? 'offerte' : number_format($fraisAutre, 0, ',', ' ') . ' F' }}
+              </span>
+            </div>
+          </div>
+        </details>
+
+        <button type="submit" class="btn btn-lg btn-bloc">Confirmer la commande</button>
+
+        <p class="mini secondaire" style="text-align:center">
+          En confirmant, vous acceptez les
+          <a href="{{ route('conditions') }}" class="lien">conditions générales</a>.
+          Vous pouvez encore annuler tant que le colis n'est pas parti.
+        </p>
       </div>
     </div>
-
-    <button class="btn" style="width:100%">Confirmer la commande</button>
-    <p style="color:var(--gris);font-size:.8rem;margin-top:10px;text-align:center">
-      En confirmant, vous acceptez les
-      <a href="{{ route('conditions') }}" style="color:var(--bleu)">conditions générales</a>.
-    </p>
   </div>
 </form>
 

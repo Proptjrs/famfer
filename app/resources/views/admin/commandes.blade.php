@@ -2,70 +2,133 @@
 @section('titre', 'Les commandes')
 @section('contenu')
 
-<h1>Les commandes</h1>
-
 @php
   $mots = [
     'en_preparation' => 'En préparation', 'expediee' => 'Expédiées',
     'en_livraison' => 'En livraison', 'livree' => 'Livrées',
-    'refusee' => 'Refusées', 'annulee' => 'Annulées', 'retournee' => 'Retournées',
+    'litige' => 'Litiges', 'refusee' => 'Refusées',
+    'annulee' => 'Annulées', 'retournee' => 'Retournées',
   ];
 @endphp
 
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin:14px 0">
-  <a href="{{ route('admin.commandes') }}"
-     class="btn btn-sm {{ $etatFiltre ? 'btn-clair' : '' }}">
-    Toutes <span style="opacity:.75">{{ $parEtat->sum() }}</span>
+@include('partials.entete', [
+  'titre' => 'Les commandes',
+  'sous' => 'Toutes les commandes de la place de marché, dans tous leurs états.',
+  'fil' => [
+    ['libelle' => 'Administration', 'url' => route('admin.tableau')],
+    ['libelle' => 'Les commandes'],
+  ],
+  'actions' => '<a href="' . route('admin.litiges') . '" class="btn btn-clair">Les litiges</a>',
+])
+
+<nav class="onglets" style="margin-bottom:var(--s5)" aria-label="Filtrer par état">
+  <a href="{{ route('admin.commandes') }}" @if(! $etatFiltre) aria-current="page" @endif>
+    Toutes <span class="nb">{{ $parEtat->sum() }}</span>
   </a>
   @foreach($mots as $cle => $mot)
     @continue(! isset($parEtat[$cle]))
     <a href="{{ route('admin.commandes', ['etat' => $cle]) }}"
-       class="btn btn-sm {{ $etatFiltre === $cle ? '' : 'btn-clair' }}">
-      {{ $mot }} <span style="opacity:.75">{{ $parEtat[$cle] }}</span>
+       @if($etatFiltre === $cle) aria-current="page" @endif>
+      {{ $mot }} <span class="nb">{{ $parEtat[$cle] }}</span>
     </a>
   @endforeach
+</nav>
+
+<div class="bloc">
+  <div class="bloc-corps serre defile-x">
+    <table class="tableau">
+      <thead>
+        <tr>
+          <th scope="col">Référence</th>
+          <th scope="col">Client</th>
+          <th scope="col">Livraison</th>
+          <th scope="col" class="num">Articles</th>
+          <th scope="col" class="num">Total</th>
+          <th scope="col" class="num">Commission</th>
+          <th scope="col">État</th>
+        </tr>
+      </thead>
+      <tbody>
+        @forelse($liste as $c)
+          <tr>
+            <td>
+              <strong class="chiffre">{{ $c->reference }}</strong>
+              <div class="mini secondaire">
+                {{ $c->created_at->translatedFormat('j M Y') }}
+              </div>
+            </td>
+
+            <td>
+              {{ $c->utilisateur->name }}
+              <div class="mini secondaire chiffre">{{ $c->telephone }}</div>
+            </td>
+
+            <td class="petit secondaire" style="max-width:16rem">
+              {{ $c->adresse_livraison }}
+            </td>
+
+            <td class="num">{{ $c->lignes->sum('quantite') }}</td>
+
+            <td class="num" style="font-weight:700">
+              {{ number_format($c->total, 0, ',', ' ') }} F
+              <div class="mini secondaire" style="font-weight:400">
+                à la livraison
+              </div>
+            </td>
+
+            {{-- La commission par commande manquait ici. C'est pourtant la seule
+                 colonne de cet écran qui parle du revenu de la plateforme. --}}
+            <td class="num">
+              @if($c->etat === 'livree')
+                <span style="color:var(--ok-ink);font-weight:650">
+                  {{ number_format($c->commission, 0, ',', ' ') }} F
+                </span>
+                <div class="mini secondaire">acquise</div>
+              @elseif(in_array($c->etat, ['refusee', 'retournee'], true))
+                <span class="secondaire" style="text-decoration:line-through">
+                  {{ number_format($c->commission, 0, ',', ' ') }} F
+                </span>
+                <div class="mini secondaire">perdue</div>
+              @elseif($c->etat === 'annulee')
+                <span class="secondaire">—</span>
+              @else
+                <span class="secondaire">
+                  {{ number_format($c->commission, 0, ',', ' ') }} F
+                </span>
+                <div class="mini secondaire">à la livraison</div>
+              @endif
+            </td>
+
+            <td>
+              @include('partials.etat', ['etat' => $c->etat])
+              @if($c->motif)
+                <div class="mini secondaire" style="max-width:14rem;margin-top:var(--s1)">
+                  {{ $c->motif }}
+                </div>
+              @endif
+            </td>
+          </tr>
+        @empty
+          <tr><td colspan="7" style="padding:0">
+            @include('partials.vide', [
+              'icone' => 'boite',
+              'titre' => $etatFiltre ? 'Aucune commande dans cet état' : 'Aucune commande',
+              'texte' => $etatFiltre
+                ? 'Changez de filtre pour voir le reste.'
+                : 'La place de marché n\'a encore enregistré aucune commande.',
+              'action' => $etatFiltre
+                ? '<a href="' . route('admin.commandes') . '" class="btn btn-clair">Toutes les commandes</a>'
+                : null,
+            ])
+          </td></tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<div class="carte large">
-  <table>
-    <tr>
-      <th>Référence</th><th>Client</th><th>Livraison</th>
-      <th>Articles</th><th style="text-align:right">Total</th><th>État</th>
-    </tr>
-    @forelse($liste as $c)
-      <tr>
-        <td>
-          <strong>{{ $c->reference }}</strong><br>
-          <span style="color:var(--gris);font-size:.8rem">
-            {{ $c->created_at->translatedFormat('j M Y') }}
-          </span>
-        </td>
-        <td>
-          {{ $c->utilisateur->name }}<br>
-          <span style="color:var(--gris);font-size:.82rem">{{ $c->telephone }}</span>
-        </td>
-        <td style="color:var(--gris);font-size:.84rem">{{ $c->adresse_livraison }}</td>
-        <td class="mono">{{ $c->lignes->sum('quantite') }}</td>
-        <td class="mono" style="text-align:right;font-weight:700">
-          {{ number_format($c->total, 0, ',', ' ') }} F
-          <br><span style="color:var(--gris);font-size:.78rem;font-weight:400">
-            @if($c->paiement === 'livraison') à la livraison
-            @else {{ strtoupper($c->paiement) }} @endif
-          </span>
-        </td>
-        <td>
-          @include('partials.etat', ['etat' => $c->etat])
-          @if($c->motif)
-            <br><span style="color:var(--gris);font-size:.78rem">{{ $c->motif }}</span>
-          @endif
-        </td>
-      </tr>
-    @empty
-      <tr><td colspan="6" style="color:var(--gris)">Aucune commande.</td></tr>
-    @endforelse
-  </table>
-</div>
-
-<div style="margin-top:18px">{{ $liste->links() }}</div>
+@if($liste->hasPages())
+  <div style="margin-top:var(--s6)">{{ $liste->links() }}</div>
+@endif
 
 @endsection

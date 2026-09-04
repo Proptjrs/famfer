@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Categorie;
+use App\Models\Commande;
 use Carbon\Carbon;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
@@ -31,6 +32,14 @@ class AppServiceProvider extends ServiceProvider
                 'menu.rayons', now()->addHour(),
                 fn () => Categorie::rayonsAvecCompte()
             ));
+
+            // Le nombre de litiges ouverts, sur la pastille du menu. Un dossier
+            // en attente d'arbitrage bloque une commission et laisse deux
+            // parties sans reponse : il ne doit pas falloir ouvrir une page
+            // pour s'apercevoir qu'il existe.
+            $vue->with('litigesOuverts', auth()->check() && auth()->user()->estAdmin()
+                ? Commande::where('etat', 'litige')->count()
+                : 0);
         });
     }
 }
