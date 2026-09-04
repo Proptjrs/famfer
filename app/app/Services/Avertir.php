@@ -34,6 +34,8 @@ use Throwable;
  */
 class Avertir
 {
+    public function __construct(private Sms $sms) {}
+
     /**
      * Prévient qui de droit du passage à un nouvel état.
      *
@@ -117,6 +119,18 @@ class Avertir
 
             default => [],
         };
+
+        // Le code de remise part aussi par téléphone. Le courriel suppose un
+        // écran et une connexion ; le SMS atteint le client qui n'a ni l'un ni
+        // l'autre au moment où le livreur sonne — et une preuve que l'acheteur
+        // ne peut pas produire ne prouve rien.
+        if ($etat === 'expediee' && $commande->code_livraison) {
+            $this->sms->envoyer($commande->telephone, sprintf(
+                'FamFer : votre commande %s arrive. Code de remise %s. '
+                . 'A donner au livreur en payant %s F, pas avant.',
+                $reference, $commande->code_livraison, $total
+            ));
+        }
 
         foreach ($envois as [$destinataire, $notification]) {
             $this->plusTard($destinataire, $notification);

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Avertir;
 use App\Services\Commissions;
 use App\Services\PasseCommande;
+use App\Services\Veille;
 use Illuminate\Http\Request;
 use RuntimeException;
 
@@ -148,6 +149,13 @@ class AdminController extends Controller
             // Un taux de refus anormal par rapport aux autres est le signal
             // qu'une boutique déclare des refus qui n'ont pas eu lieu.
             'suspects' => $this->commissions->tauxDeRefusParBoutique(),
+            // Le silence du vendeur est suspect : un colis expedie il y a une
+            // semaine et jamais clos dort dans un magasin, ou bien il a ete
+            // remis sans etre declare.
+            'dormantes' => Commande::with('lignes.boutique')
+                ->whereIn('etat', ['expediee', 'en_livraison'])
+                ->where('expediee_le', '<=', now()->subDays(Veille::JOURS_AVANT_RELANCE))
+                ->orderBy('expediee_le')->limit(30)->get(),
         ]);
     }
 

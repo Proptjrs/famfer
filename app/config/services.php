@@ -3,6 +3,19 @@
 return [
 
     /*
+     * Le canal SMS.
+     *
+     * « log » ecrit dans le journal : c'est le pilote du developpement, et le
+     * seul disponible tant qu'aucun contrat n'est signe avec un operateur.
+     * Brancher Orange, Free ou Expresso revient a ajouter un pilote dans
+     * « App\Services\Sms » et a changer cette valeur.
+     */
+    'sms' => [
+        'canal' => env('SMS_CANAL', 'log'),
+    ],
+
+
+    /*
     |--------------------------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------

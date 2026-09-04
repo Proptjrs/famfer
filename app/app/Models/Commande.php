@@ -47,6 +47,7 @@ class Commande extends Model
         'expediee_le', 'livree_le', 'cloturee_le', 'motif',
         'code_livraison', 'code_remis_le', 'confirmee_le',
         'litige_par', 'litige_motif', 'litige_le', 'etat_conteste',
+        'relance_le', 'close_le',
     ];
 
     protected $casts = [
@@ -55,6 +56,7 @@ class Commande extends Model
         'taux_commission_pour_mille' => 'integer', 'commission' => 'integer',
         'code_remis_le' => 'datetime', 'confirmee_le' => 'datetime',
         'litige_le' => 'datetime',
+        'relance_le' => 'datetime', 'close_le' => 'datetime',
         'expediee_le' => 'datetime', 'livree_le' => 'datetime', 'cloturee_le' => 'datetime',
     ];
 
@@ -122,7 +124,11 @@ class Commande extends Model
      */
     public function contestableParLeClient(): bool
     {
-        return in_array($this->etat, ['refusee', 'livree'], true);
+        // La fenêtre se ferme : sans quoi un vendeur honnête n'aurait jamais de
+        // certitude, et un refus enregistré en janvier pourrait lui être
+        // contesté en juin, quand plus personne ne se souvient de rien.
+        return in_array($this->etat, ['refusee', 'livree'], true)
+            && $this->close_le === null;
     }
 
     public function enLitige(): bool

@@ -1,14 +1,21 @@
 <?php
 
+use Illuminate\Support\Facades\Schedule;
+
 /*
- * Aucune tâche planifiée.
+ * La veille quotidienne.
  *
- * Le modèle précédent en avait besoin : les commandes y expiraient faute de
- * paiement, et un panier abandonné bloquait le stock d'un vendeur. Avec le
- * paiement à la livraison, rien ne se périme tout seul — une commande attend
- * que le vendeur l'expédie, et le stock n'est retenu qu'une fois la commande
- * réellement passée.
+ * Ce fichier a longtemps été vide, avec un commentaire expliquant que « rien ne
+ * se périme tout seul » avec le paiement à la livraison. C'était vrai tant que
+ * le vendeur seul déclarait la livraison : il n'y avait qu'une version des
+ * faits, et rien à arbitrer.
  *
- * Ce fichier reste, vide, plutôt que d'être supprimé : « bootstrap/app.php »
- * le charge, et son absence ferait échouer le démarrage.
+ * Depuis que le client peut confirmer et contester, le temps devient une source
+ * de vérité à part entière — la seule qui ne coûte rien et n'exige aucun tiers.
+ * Une commande expédiée que personne ne clôt pose une question ; une commande
+ * close depuis dix jours n'en pose plus.
+ *
+ * Trois heures du matin : personne ne commande, et les relances arrivent avec
+ * le courrier du matin plutôt qu'au milieu de la nuit.
  */
+Schedule::command('famfer:veiller')->dailyAt('03:00')->withoutOverlapping();

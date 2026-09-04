@@ -101,6 +101,64 @@ déclare des refus fictifs le fait monter, seul, pendant que ses concurrents
 restent bas. Les boutiques de moins de cinq commandes closes n'y figurent pas :
 deux refus sur trois ventes est le lot d'un débutant malchanceux, pas un indice.
 
+### 5. Le téléphone
+
+Le code de remise avait un défaut : il s'affichait sur un écran. Un client sans
+connexion au moment où le livreur sonne ne pouvait pas produire la preuve qu'on
+lui demandait — et une preuve que l'acheteur ne peut pas produire ne prouve rien.
+
+Le SMS est la seule adresse que tout le monde possède ici, et c'est une source
+distincte : un client injoignable par courriel reste joignable par téléphone.
+Le service normalise les trois écritures d'un même numéro sénégalais
+(« 77 123 45 67 », « 221771234567 », « +221 77 123 45 67 ») — sans quoi deux
+clients sur trois ne recevraient rien.
+
+L'envoi réel exige un contrat opérateur. Le mécanisme est complet ; son seul
+pilote écrit dans le journal, comme `MAIL_MAILER=log` pour les courriels.
+Brancher Orange, Free ou Expresso revient à ajouter un pilote : rien d'autre ne
+change dans l'application.
+
+### 6. Le temps, et le silence
+
+C'est la source la plus fréquemment utile, bien avant la fraude : le cas où
+**personne ne parle**. Un commerçant débordé qui ne clôture jamais, un acheteur
+qui ne revient pas sur le site une fois son fer reçu.
+
+Le silence n'est pas neutre, et il ne dit pas la même chose selon qui se tait.
+
+**Le silence du vendeur est suspect.** Un colis expédié depuis cinq jours et
+jamais clos dort dans un magasin, ou bien il a été remis sans être déclaré — et
+la seconde hypothèse est exactement celle qui l'arrange. Une veille quotidienne
+pose alors la question au client, par courriel **et** par SMS. Le client n'a
+aucune raison de mentir dans ce sens : confirmer sa réception ne lui rapporte
+rien. Une seule relance par commande — au-delà, on harcèle quelqu'un qui a
+déjà payé.
+
+**Le silence du client vaut acceptation.** Passé dix jours, la fenêtre de
+contestation se ferme. Sans cela, un vendeur honnête n'aurait jamais de
+certitude : un refus enregistré en janvier pourrait lui être contesté en juin,
+quand plus personne ne se souvient de rien. Un litige déjà ouvert, lui, ne se
+referme jamais tout seul — le temps ne peut pas arbitrer à la place de
+l'administration.
+
+### Les deux voies qui exigent un contrat
+
+Deux mécanismes seraient plus forts que tout ce qui précède, et aucun n'est à
+portée d'un projet académique. Ils méritent d'être nommés, parce qu'ils
+constituent la suite naturelle du travail.
+
+**Le paiement mobile à la porte.** Si le client règle par Wave ou Orange Money
+sur le compte de la plateforme plutôt qu'en espèces au vendeur, la question
+disparaît : l'argent lui-même témoigne, et l'on revient à un séquestre. Tout le
+dispositif de preuve ci-dessus n'existe que parce que **les espèces ne laissent
+aucune trace**. C'est la voie la plus prometteuse au Sénégal, où Wave est
+largement répandu — elle suppose un contrat marchand avec l'opérateur.
+
+**Le tiers livreur.** Confier la tournée à un transporteur indépendant retire au
+vendeur son monopole sur la déclaration : c'est un témoin sans intérêt dans la
+vente. C'est ce que fait Jumia avec sa propre logistique. Cela introduit un
+quatrième acteur dans le modèle, avec sa rémunération et ses litiges propres.
+
 ### Ce que cela ne couvre pas
 
 Un vendeur et un client **de connivence** peuvent toujours déclarer un faux refus
@@ -170,6 +228,7 @@ La plateforme ne gagne que si le vendeur a réellement vendu.
 | `/vendeur/commissions` | le vendeur | encaissé, commission, net, et le relevé mois par mois |
 | `/administration/revenus` | l'administration | commission acquise, taux moyen obtenu, perte sur refus, et le taux de chaque boutique — modifiable |
 | `/administration` | l'administration | la commission acquise en carte de tableau de bord |
+| `/administration/litiges` | l'administration | les litiges à trancher, les commandes dormantes, le taux de refus par boutique |
 
 ## Une réserve honnête
 

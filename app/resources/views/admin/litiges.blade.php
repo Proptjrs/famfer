@@ -85,6 +85,42 @@
 </div>
 
 <div class="bloc">
+  <div class="bloc-tete">
+    <h2>Commandes dormantes</h2>
+    <span style="color:var(--gris);font-size:.85rem">
+      expédiées depuis plus de {{ \App\Services\Veille::JOURS_AVANT_RELANCE }} jours
+    </span>
+  </div>
+  <div class="bloc-corps">
+    {{-- Le silence du vendeur est la troisième source. Un colis expédié il y a
+         une semaine et jamais clos dort dans un magasin, ou bien il a été remis
+         sans être déclaré — et la seconde hypothèse est celle qui l'arrange.
+         La veille quotidienne a déjà posé la question au client. --}}
+    @forelse($dormantes as $c)
+      <div style="display:flex;gap:12px;align-items:center;padding:9px 0;flex-wrap:wrap;
+                  border-bottom:1px solid var(--bord)">
+        <strong>{{ $c->reference }}</strong>
+        @include('partials.etat', ['etat' => $c->etat])
+        <span style="color:var(--gris);font-size:.86rem">
+          {{ $c->lignes->first()?->boutique?->nom ?? '—' }}
+        </span>
+        <span style="color:var(--rouge);font-size:.86rem">
+          {{ (int) $c->expediee_le?->diffInDays() }} jours
+        </span>
+        <span style="color:var(--gris);font-size:.86rem">
+          {{ $c->relance_le ? 'client relancé' : 'pas encore relancé' }}
+        </span>
+        <span class="mono" style="margin-left:auto;font-weight:700">
+          {{ number_format($c->total, 0, ',', ' ') }} F
+        </span>
+      </div>
+    @empty
+      <p style="color:var(--gris)">Aucune commande ne traîne.</p>
+    @endforelse
+  </div>
+</div>
+
+<div class="bloc">
   <div class="bloc-tete"><h2>Taux de refus par boutique</h2></div>
   <div class="bloc-corps">
     {{-- Le détecteur. La preuve par code couvre une commande ; ce tableau
