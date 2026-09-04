@@ -177,33 +177,8 @@
 
     <div class="bloc">
       <div class="bloc-tete"><h2>Répartition des commandes</h2></div>
-      <div class="bloc-corps pile">
-        @if($etats->isEmpty())
-          <p class="petit secondaire">Aucune commande enregistrée.</p>
-        @else
-          <div class="repartition" role="img" aria-label="Répartition des commandes par état">
-            @foreach($etats as $e)
-              @php $c = ['ok'=>'var(--ok)','grave'=>'var(--grave)','alerte'=>'var(--alerte)',
-                         'info'=>'var(--info)','neutre'=>'var(--line-strong)'][$e['ton']] @endphp
-              <span style="width:{{ $e['part'] }}%;background:{{ $c }}"
-                    title="{{ $e['libelle'] }} : {{ $e['nombre'] }}"></span>
-            @endforeach
-          </div>
-          <div class="pile-sm">
-            @foreach($etats as $e)
-              @php $c = ['ok'=>'var(--ok)','grave'=>'var(--grave)','alerte'=>'var(--alerte)',
-                         'info'=>'var(--info)','neutre'=>'var(--line-strong)'][$e['ton']] @endphp
-              <div class="rang-serre petit">
-                <i style="width:.625rem;height:.625rem;border-radius:2px;background:{{ $c }};flex:none"></i>
-                <span>{{ $e['libelle'] }}</span>
-                <span class="chiffre pousse secondaire">
-                  {{ $e['nombre'] }}
-                  <span class="mini">({{ number_format($e['part'], 1, ',', ' ') }} %)</span>
-                </span>
-              </div>
-            @endforeach
-          </div>
-        @endif
+      <div class="bloc-corps">
+        @include('partials.legende', ['parts' => $etats])
       </div>
     </div>
 

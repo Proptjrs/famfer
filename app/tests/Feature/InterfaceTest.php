@@ -304,4 +304,65 @@ class InterfaceTest extends TestCase
         $this->assertStringContainsString('disabled', $html);
         $this->assertStringNotContainsString('name="paiement" value="wave"', $html);
     }
+
+    // ── Les pages d'erreur ───────────────────────────────────────────────────
+
+    /**
+     * Une erreur reste une page de FamFer.
+     *
+     * Laravel affichait « Not Found » : en anglais, sans marque, sans
+     * navigation, sans issue. Un visiteur qui tombe dessus quitte le site.
+     */
+    public function test_la_page_introuvable_est_habillee(): void
+    {
+        $reponse = $this->get('/cette-page-nexiste-pas')->assertNotFound();
+        $html = $reponse->getContent();
+
+        $this->assertStringContainsString('Cette page n', $html);
+        $this->assertStringContainsString('FAM', $html, 'La marque doit rester visible.');
+        $this->assertStringContainsString(route('accueil'), $html,
+            'Une page d\'erreur sans chemin de retour est un cul-de-sac.');
+        $this->assertStringNotContainsString('Not Found', $html);
+    }
+
+    /**
+     * Les pages de panne se rendent sans la base de données.
+     *
+     * C'est leur seule exigence réelle, et elle n'est pas théorique : une erreur
+     * 500 est le plus souvent causée par une base indisponible. Une page
+     * d'erreur qui interroge la base déclencherait une seconde erreur à
+     * l'intérieur de la première, et le visiteur verrait la page blanche du
+     * serveur.
+     */
+    public function test_les_pages_de_panne_ne_dependent_de_rien(): void
+    {
+        foreach ([500, 503] as $code) {
+            $html = view('errors.' . $code)->render();
+
+            $this->assertStringContainsString('FAM', $html);
+            $this->assertStringNotContainsString('rayons', $html,
+                "La page {$code} ne doit pas rendre la barre des rayons : elle "
+                . 'interroge la base, précisément ce qui vient de tomber.');
+            $this->assertStringNotContainsString('css/famfer.css', $html,
+                "La page {$code} doit porter son style : si le serveur de "
+                . 'fichiers est en cause, la feuille ne se chargerait pas non plus.');
+        }
+    }
+
+    /**
+     * Le gabarit se rend même sans session.
+     *
+     * « $errors » est partagé par l'intergiciel de session. Une page d'erreur
+     * servie avant son démarrage le recevait nul, et « $errors->any() » faisait
+     * alors échouer la page qui devait justement rattraper l'échec.
+     */
+    public function test_le_gabarit_supporte_labsence_de_session(): void
+    {
+        foreach ([403, 404, 419] as $code) {
+            $html = view('errors.' . $code)->render();
+
+            $this->assertStringContainsString('<h1', $html,
+                "La page {$code} ne se rend pas hors contexte de requête.");
+        }
+    }
 }

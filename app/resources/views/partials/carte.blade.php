@@ -16,7 +16,7 @@
     @include('partials.image', ['p' => $p, 'taille' => 96])
   </div>
 
-  <div class="nom">{{ $p->nom }}</div>
+  <div class="nom tronque-2">{{ $p->nom }}</div>
 
   <div>
     <span class="prix">{{ number_format($p->prix, 0, ',', ' ') }} F</span>

@@ -308,14 +308,13 @@ h4 { font-size: var(--t-sm); }
 }
 
 /* Coupe le texte à n lignes sans casser la hauteur des cartes voisines. */
-.tronque-1, .tronque-2, .tronque-3 {
+.tronque-1, .tronque-2 {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 .tronque-1 { -webkit-line-clamp: 1; line-clamp: 1; }
 .tronque-2 { -webkit-line-clamp: 2; line-clamp: 2; }
-.tronque-3 { -webkit-line-clamp: 3; line-clamp: 3; }
 
 .visuellement-cache {
   position: absolute; width: 1px; height: 1px;
@@ -343,7 +342,6 @@ main.large { flex: 1; padding-block: var(--s6) var(--s12); }
 .g2 { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
 .g3 { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
 .g4 { grid-template-columns: repeat(auto-fill, minmax(min(196px, 100%), 1fr)); }
-.g-auto { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
 
 /* Deux colonnes : le contenu, puis une colonne latérale qui passe dessous. */
 .deux-colonnes {
@@ -470,7 +468,7 @@ main.large { flex: 1; padding-block: var(--s6) var(--s12); }
 .champ { display: flex; flex-direction: column; gap: var(--s1); }
 .champ + .champ { margin-top: var(--s4); }
 
-label, .etiquette {
+label {
   font-size: var(--t-xs);
   font-weight: 650;
   color: var(--ink-2);
@@ -529,15 +527,6 @@ select {
 }
 .case span { font-size: var(--t-sm); color: var(--ink-2); font-weight: 400; }
 
-/* Champ et bouton collés : la recherche, un code, un filtre. */
-.groupe-champ { display: flex; }
-.groupe-champ > :first-child {
-  border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0;
-}
-.groupe-champ > :last-child {
-  border-top-left-radius: 0; border-bottom-left-radius: 0;
-}
-.groupe-champ > :first-child:focus { position: relative; z-index: 1; }
 
 fieldset { border: 0; }
 legend { font-family: var(--f-titre); font-weight: 700; font-size: var(--t-md);
@@ -797,7 +786,6 @@ legend { font-family: var(--f-titre); font-weight: 700; font-size: var(--t-md);
 .graphe .aire     { fill: var(--brand); opacity: .12; }
 .graphe .point    { fill: var(--brand); }
 .graphe .barre    { fill: var(--brand); }
-.graphe .barre-2  { fill: var(--info); }
 .graphe .barre.ok     { fill: var(--ok); }
 .graphe .barre.alerte { fill: var(--alerte); }
 .graphe .barre.grave  { fill: var(--grave); }

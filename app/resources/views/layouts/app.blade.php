@@ -164,7 +164,12 @@
       <div>{{ session('erreur') }}</div>
     </div>
   @endif
-  @if($errors->any() && ! $errors->has('_ignorer'))
+  {{-- « $errors » est partagé par l'intergiciel de session. Une vue rendue en
+       dehors du groupe « web » — une page d'erreur servie avant que la session
+       ne démarre, un rendu depuis la console — le reçoit nul, et l'appeler sans
+       garde faisait alors échouer la page qui devait justement rattraper
+       l'échec. --}}
+  @if(($errors ?? null) && $errors->any() && ! $errors->has('_ignorer'))
     <div class="message message-grave" role="alert" style="margin-bottom:var(--s5)">
       @include('partials.symbole', ['nom' => 'alerte', 'taille' => 18])
       <div>
