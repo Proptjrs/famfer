@@ -177,12 +177,20 @@ class ParcoursTest extends TestCase
         $this->actingAs($vendeur)->post(route('vendeur.expedier', $commande))->assertRedirect();
         $this->assertSame('expediee', $commande->fresh()->etat);
 
-        $this->actingAs($vendeur)->post(route('vendeur.livrer', $commande->fresh()))->assertRedirect();
+        // Le code de remise, que le client dicte au livreur en réglant. Sans
+        // lui le vendeur déclarerait seul une livraison dont il profite.
+        $code = $commande->fresh()->code_livraison;
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $code);
+
+        $this->actingAs($vendeur)
+            ->post(route('vendeur.livrer', $commande->fresh()), ['code' => $code])
+            ->assertRedirect();
 
         $livree = $commande->fresh();
         $this->assertSame('livree', $livree->etat);
         // Payée à la livraison : les deux vont ensemble.
         $this->assertTrue($livree->paye);
+        $this->assertNotNull($livree->code_remis_le);
     }
 
     // ── Le carnet d'adresses ─────────────────────────────────────────────────

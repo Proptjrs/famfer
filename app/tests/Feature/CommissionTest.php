@@ -70,7 +70,7 @@ class CommissionTest extends TestCase
         $passe->expedier($c);
         $passe->mettreEnLivraison($c->fresh());
 
-        return $passe->livrer($c->fresh());
+        return $passe->livrer($c->fresh(), $c->fresh()->code_livraison);
     }
 
     // ── Le calcul ────────────────────────────────────────────────────────────

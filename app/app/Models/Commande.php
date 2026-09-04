@@ -22,26 +22,39 @@ class Commande extends Model
         // est facultatif — un vendeur qui livre lui-même annonce la remise, pas
         // le départ du camion — et un colis se refuse à la porte dans les deux
         // cas. Sans cela, l'état restait inatteignable en pratique.
-        'expediee'       => ['en_livraison', 'livree', 'refusee', 'annulee'],
-        'en_livraison'   => ['livree', 'refusee'],
-        'livree'         => ['retournee'],
+        'expediee'       => ['en_livraison', 'livree', 'refusee', 'annulee', 'litige'],
+        'en_livraison'   => ['livree', 'refusee', 'litige'],
+        'livree'         => ['retournee', 'litige'],
+        // « refusee » n'est plus terminal : c'est la porte de sortie du client
+        // dont le vendeur a nié la livraison après l'avoir encaissée. Sans
+        // cette transition, la fraude était sans recours.
+        'refusee'        => ['litige'],
+        // Seule l'administration sort d'un litige, et elle tranche vers un état
+        // réel — jamais vers un autre litige.
+        'litige'         => ['livree', 'refusee', 'annulee'],
         // Terminaux.
-        'refusee'        => [],
         'annulee'        => [],
         'retournee'      => [],
     ];
+
+    /** Les deux camps qui peuvent ouvrir un litige. */
+    public const PARTIES = ['client', 'vendeur'];
 
     protected $fillable = [
         'reference', 'utilisateur_id', 'destinataire', 'telephone', 'adresse_livraison',
         'etat', 'paiement', 'paye', 'sous_total', 'frais_livraison', 'total',
         'taux_commission_pour_mille', 'commission',
         'expediee_le', 'livree_le', 'cloturee_le', 'motif',
+        'code_livraison', 'code_remis_le', 'confirmee_le',
+        'litige_par', 'litige_motif', 'litige_le', 'etat_conteste',
     ];
 
     protected $casts = [
         'paye' => 'boolean',
         'sous_total' => 'integer', 'frais_livraison' => 'integer', 'total' => 'integer',
         'taux_commission_pour_mille' => 'integer', 'commission' => 'integer',
+        'code_remis_le' => 'datetime', 'confirmee_le' => 'datetime',
+        'litige_le' => 'datetime',
         'expediee_le' => 'datetime', 'livree_le' => 'datetime', 'cloturee_le' => 'datetime',
     ];
 
@@ -86,6 +99,35 @@ class Commande extends Model
     public function peutAllerVers(string $etat): bool
     {
         return in_array($etat, self::SUITES[$this->etat] ?? [], true);
+    }
+
+    /**
+     * Le client peut-il confirmer avoir reçu ?
+     *
+     * C'est le contrepoids de tout le dispositif : sa déclaration vaut celle du
+     * vendeur. Un commerçant qui aurait encaissé puis nié la livraison se voit
+     * contredit par l'acheteur, et la commission redevient due.
+     */
+    public function confirmableParLeClient(): bool
+    {
+        return in_array($this->etat, ['expediee', 'en_livraison'], true)
+            && $this->confirmee_le === null;
+    }
+
+    /**
+     * Le client peut-il contester ?
+     *
+     * Deux situations, opposées et toutes deux réelles : le vendeur a déclaré
+     * un refus qui n'a pas eu lieu, ou une livraison qui n'a pas eu lieu.
+     */
+    public function contestableParLeClient(): bool
+    {
+        return in_array($this->etat, ['refusee', 'livree'], true);
+    }
+
+    public function enLitige(): bool
+    {
+        return $this->etat === 'litige';
     }
 
     /** Le client peut encore annuler tant que rien n'est parti. */

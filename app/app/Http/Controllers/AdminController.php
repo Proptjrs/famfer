@@ -9,7 +9,9 @@ use App\Models\Produit;
 use App\Models\User;
 use App\Services\Avertir;
 use App\Services\Commissions;
+use App\Services\PasseCommande;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 /**
  * L'administration de la plateforme.
@@ -23,6 +25,7 @@ class AdminController extends Controller
     public function __construct(
         private Avertir $avertir,
         private Commissions $commissions,
+        private PasseCommande $passe,
     ) {}
 
     public function tableau()
@@ -128,6 +131,46 @@ class AdminController extends Controller
             'La commission de %s passe à %s %%. Les commandes déjà passées gardent leur taux.',
             $boutique->nom, rtrim(rtrim(number_format($d['taux'], 1, ',', ' '), '0'), ',')
         ));
+    }
+
+    /**
+     * Les litiges ouverts.
+     *
+     * C'est le seul endroit où un tiers décide à la place des parties, et il
+     * doit rester rare : une place de marché où l'administration arbitre tous
+     * les jours a un problème de vendeurs, pas de logiciel.
+     */
+    public function litiges()
+    {
+        return view('admin.litiges', [
+            'liste' => Commande::with('utilisateur', 'lignes.boutique')
+                ->where('etat', 'litige')->orderBy('litige_le')->get(),
+            // Un taux de refus anormal par rapport aux autres est le signal
+            // qu'une boutique déclare des refus qui n'ont pas eu lieu.
+            'suspects' => $this->commissions->tauxDeRefusParBoutique(),
+        ]);
+    }
+
+    /**
+     * L'arbitrage.
+     *
+     * Trancher vers « livrée » rend la commission due et laisse le stock sorti ;
+     * vers « refusée » ou « annulée », la marchandise rentre et rien n'est dû.
+     */
+    public function trancher(Request $r, Commande $commande)
+    {
+        $d = $r->validate([
+            'vers' => 'required|in:livree,refusee,annulee',
+            'motif' => 'required|string|min:10|max:300',
+        ]);
+
+        try {
+            $this->passe->trancher($commande, $d['vers'], $d['motif']);
+        } catch (RuntimeException $e) {
+            return back()->with('erreur', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Litige tranché : commande ' . $d['vers'] . '.');
     }
 
     public function commandes(Request $r)

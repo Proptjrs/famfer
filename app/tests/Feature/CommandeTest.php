@@ -137,7 +137,7 @@ class CommandeTest extends TestCase
         $this->assertSame('expediee', $passe->expedier($commande)->etat);
         $this->assertSame('en_livraison', $passe->mettreEnLivraison($commande->fresh())->etat);
 
-        $livree = $passe->livrer($commande->fresh());
+        $livree = $passe->livrer($commande->fresh(), $commande->fresh()->code_livraison);
         $this->assertSame('livree', $livree->etat);
         // Payée à la livraison : les deux vont ensemble sur ce mode.
         $this->assertTrue($livree->paye);
@@ -149,7 +149,7 @@ class CommandeTest extends TestCase
         $commande = $this->commander();
 
         $this->expectExceptionMessageMatches('/ne peut pas passer/');
-        app(PasseCommande::class)->livrer($commande);
+        app(PasseCommande::class)->livrer($commande, $commande->code_livraison);
     }
 
     public function test_une_commande_livree_ne_sannule_plus(): void
@@ -158,7 +158,7 @@ class CommandeTest extends TestCase
         $passe = app(PasseCommande::class);
         $passe->expedier($commande);
         $passe->mettreEnLivraison($commande->fresh());
-        $passe->livrer($commande->fresh());
+        $passe->livrer($commande->fresh(), $commande->fresh()->code_livraison);
 
         $this->expectException(RuntimeException::class);
         $passe->annuler($commande->fresh(), 'Trop tard');

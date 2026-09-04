@@ -122,6 +122,51 @@ class ClientController extends Controller
         return back()->with('ok', 'Commande annulée. Le stock est rendu au vendeur.');
     }
 
+    /**
+     * Le client déclare avoir reçu et payé.
+     *
+     * Sa parole vaut celle du vendeur. C'est ce qui empêche un commerçant
+     * d'encaisser les espèces puis de déclarer un refus pour garder l'argent
+     * sans payer de commission.
+     */
+    public function confirmer(Request $r, Commande $commande)
+    {
+        $this->verifier($r, $commande);
+
+        if (! $commande->confirmableParLeClient()) {
+            return back()->with('erreur',
+                'Cette commande n\'est pas en cours de livraison.');
+        }
+
+        $this->passe->confirmerParLeClient($commande);
+
+        return back()->with('ok',
+            'Réception confirmée. Vous pouvez maintenant noter les articles reçus.');
+    }
+
+    /**
+     * Le client conteste ce que le vendeur a déclaré.
+     *
+     * Deux cas opposés, tous deux réels : un refus qui n'a pas eu lieu — le
+     * colis a bien été remis et payé — ou une livraison qui n'a pas eu lieu.
+     */
+    public function contester(Request $r, Commande $commande)
+    {
+        $this->verifier($r, $commande);
+
+        if (! $commande->contestableParLeClient()) {
+            return back()->with('erreur',
+                'Il n\'y a rien à contester sur cette commande.');
+        }
+
+        $d = $r->validate(['motif' => 'required|string|min:10|max:300']);
+
+        $this->passe->contester($commande, 'client', $d['motif']);
+
+        return back()->with('ok',
+            'Litige ouvert. L\'administration de FamFer va examiner votre dossier.');
+    }
+
     public function noter(Request $r, Commande $commande)
     {
         $this->verifier($r, $commande);

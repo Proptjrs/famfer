@@ -60,9 +60,24 @@
           @csrf <button class="btn btn-sm">Expédier</button>
         </form>
       @elseif(in_array($c->etat, ['expediee', 'en_livraison']))
-        <form method="POST" action="{{ route('vendeur.livrer', $c) }}" style="margin-left:auto">
-          @csrf <button class="btn btn-sm btn-vert">Marquer livrée</button>
+        {{-- Le code de remise, dicté par le client au moment où il reçoit et
+             règle. Sans lui, le vendeur déclarerait seul une livraison dont il
+             est le bénéficiaire : il pourrait encaisser puis annoncer un refus
+             pour garder l'argent sans payer de commission. --}}
+        <form method="POST" action="{{ route('vendeur.livrer', $c) }}"
+              style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          @csrf
+          <input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required
+                 placeholder="Code client"
+                 class="mono"
+                 style="width:104px;padding:6px 8px;border:1px solid var(--bord);
+                        border-radius:var(--r);letter-spacing:.1em">
+          <button class="btn btn-sm btn-vert">Marquer livrée</button>
         </form>
+      @elseif($c->etat === 'litige')
+        <span class="etiq etiq-orange" style="margin-left:auto">
+          Litige — l'administration examine
+        </span>
       @elseif($c->motif)
         <span style="color:var(--rouge);font-size:.85rem;margin-left:auto">{{ $c->motif }}</span>
       @endif

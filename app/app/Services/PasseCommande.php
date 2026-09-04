@@ -136,9 +136,21 @@ class PasseCommande
 
     // ── Le cycle de vie ──────────────────────────────────────────────────────
 
+    /**
+     * L'expédition tire le code de remise.
+     *
+     * Six chiffres au hasard, communiqués au client seul. Le vendeur ne pourra
+     * clore la commande sans ce code, que l'acheteur ne dicte qu'en recevant le
+     * colis : c'est ce qui transforme la déclaration du vendeur en preuve.
+     *
+     * « random_int » et non « rand » : un code devinable ne prouverait rien.
+     */
     public function expedier(Commande $c): Commande
     {
-        return $this->faireAvancer($c, 'expediee', fn (Commande $c) => $c->expediee_le = now());
+        return $this->faireAvancer($c, 'expediee', function (Commande $c) {
+            $c->expediee_le = now();
+            $c->code_livraison = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        });
     }
 
     public function mettreEnLivraison(Commande $c): Commande
@@ -146,13 +158,113 @@ class PasseCommande
         return $this->faireAvancer($c, 'en_livraison');
     }
 
-    /** Livrée et payée : sur ce mode, les deux vont ensemble. */
-    public function livrer(Commande $c): Commande
+    /**
+     * Livrée et payée : sur ce mode, les deux vont ensemble.
+     *
+     * Le vendeur doit produire le code que le client lui a dicté à la remise.
+     * Sans lui, il déclarerait seul un fait dont il est le bénéficiaire.
+     *
+     * Le code n'est exigé que s'il en existe un : une commande confirmée par le
+     * client lui-même, ou tranchée par l'administration, se clôt sans.
+     *
+     * @throws RuntimeException code absent ou faux
+     */
+    public function livrer(Commande $c, ?string $code = null): Commande
     {
-        return $this->faireAvancer($c, 'livree', function (Commande $c) {
+        return $this->faireAvancer($c, 'livree', function (Commande $c) use ($code) {
+            if ($c->code_livraison !== null) {
+                // Comparaison à temps constant : le code est court, et un
+                // vendeur de mauvaise foi le chercherait par essais.
+                if ($code === null || ! hash_equals($c->code_livraison, trim($code))) {
+                    throw new RuntimeException(
+                        'Code de remise incorrect. Demandez au client le code à '
+                        . 'six chiffres affiché sur son suivi de commande.'
+                    );
+                }
+                $c->code_remis_le = now();
+            }
+
             $c->livree_le = now();
             $c->cloturee_le = now();
             $c->paye = $c->paiement === 'livraison';
+        });
+    }
+
+    /**
+     * Le client déclare avoir reçu et payé.
+     *
+     * C'est le contrepoids de tout le dispositif. Un vendeur qui aurait livré,
+     * encaissé les espèces, puis déclaré « refusée » pour garder l'argent sans
+     * payer de commission se voit contredit par l'acheteur — et la commission
+     * redevient due.
+     *
+     * On ne demande aucun code ici : le client n'a rien à prouver, il témoigne
+     * contre son propre intérêt apparent.
+     */
+    public function confirmerParLeClient(Commande $c): Commande
+    {
+        return $this->faireAvancer($c, 'livree', function (Commande $c) {
+            $c->confirmee_le = now();
+            $c->livree_le = $c->livree_le ?? now();
+            $c->cloturee_le = now();
+            $c->paye = $c->paiement === 'livraison';
+        });
+    }
+
+    /**
+     * Une partie conteste l'état déclaré par l'autre.
+     *
+     * L'état contesté est conservé : sans lui, l'administration arbitrerait
+     * sans savoir ce qui était affirmé au départ.
+     */
+    public function contester(Commande $c, string $par, string $motif): Commande
+    {
+        if (! in_array($par, Commande::PARTIES, true)) {
+            throw new RuntimeException('Seuls le client et le vendeur ouvrent un litige.');
+        }
+
+        return $this->faireAvancer($c, 'litige', function (Commande $c) use ($par, $motif) {
+            $c->etat_conteste = $c->etat;
+            $c->litige_par = $par;
+            $c->litige_motif = $motif;
+            $c->litige_le = now();
+            $c->cloturee_le = null;
+        });
+    }
+
+    /**
+     * L'administration tranche le litige.
+     *
+     * Le stock suit la décision : rendu si la vente n'a pas eu lieu, laissé
+     * sorti si elle a eu lieu. Comme le litige naît après une déclaration qui a
+     * pu déjà rendre le stock, on ne le rend qu'une fois — d'où la comparaison
+     * avec l'état contesté.
+     *
+     * @throws RuntimeException décision hors des trois issues possibles
+     */
+    public function trancher(Commande $c, string $vers, string $motif): Commande
+    {
+        if (! in_array($vers, ['livree', 'refusee', 'annulee'], true)) {
+            throw new RuntimeException('Un litige se tranche en livrée, refusée ou annulée.');
+        }
+
+        $stockDejaRendu = in_array($c->etat_conteste, ['refusee', 'annulee', 'retournee'], true);
+
+        return $this->faireAvancer($c, $vers, function (Commande $c) use ($vers, $motif, $stockDejaRendu) {
+            $c->motif = $motif;
+            $c->cloturee_le = now();
+            $c->paye = $vers === 'livree' && $c->paiement === 'livraison';
+
+            if ($vers === 'livree') {
+                $c->livree_le = $c->livree_le ?? now();
+
+                // La vente a bien eu lieu : le stock rendu à tort ressort.
+                if ($stockDejaRendu) {
+                    $this->reprendreLeStock($c);
+                }
+            } elseif (! $stockDejaRendu) {
+                $this->rendreLeStock($c);
+            }
         });
     }
 
@@ -232,6 +344,15 @@ class PasseCommande
         foreach ($c->lignes as $ligne) {
             Produit::whereKey($ligne->produit_id)->increment('stock', $ligne->quantite);
             Produit::whereKey($ligne->produit_id)->decrement('nombre_ventes', $ligne->quantite);
+        }
+    }
+
+    /** Le contraire : l'arbitrage a jugé que la vente avait bien eu lieu. */
+    private function reprendreLeStock(Commande $c): void
+    {
+        foreach ($c->lignes as $ligne) {
+            Produit::whereKey($ligne->produit_id)->decrement('stock', $ligne->quantite);
+            Produit::whereKey($ligne->produit_id)->increment('nombre_ventes', $ligne->quantite);
         }
     }
 

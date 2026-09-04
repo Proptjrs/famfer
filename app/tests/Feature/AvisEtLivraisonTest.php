@@ -206,6 +206,6 @@ class AvisEtLivraisonTest extends TestCase
         $passe->expedier($c);
         $passe->mettreEnLivraison($c->fresh());
 
-        return $passe->livrer($c->fresh())->load('lignes');
+        return $passe->livrer($c->fresh(), $c->fresh()->code_livraison)->load('lignes');
     }
 }

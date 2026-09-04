@@ -12,6 +12,7 @@ use App\Services\Commissions;
 use App\Services\PasseCommande;
 use App\Services\Photos;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -283,17 +284,46 @@ class VendeurController extends Controller
         $this->verifierCommande($r, $commande);
 
         try {
-            // Le passage par « en livraison » est implicite quand le vendeur
-            // livre lui-même : il annonce la remise, pas le départ du camion.
-            if ($commande->etat === 'expediee') {
-                $commande = $this->passe->mettreEnLivraison($commande);
-            }
-            $this->passe->livrer($commande);
+            // Les deux transitions dans une seule transaction : sans cela, un
+            // code faux laissait la commande en « en livraison », l'état ayant
+            // avancé sur une action pourtant refusée.
+            DB::transaction(function () use ($r, $commande) {
+                // Le passage par « en livraison » est implicite quand le vendeur
+                // livre lui-même : il annonce la remise, pas le départ du camion.
+                if ($commande->etat === 'expediee') {
+                    $commande = $this->passe->mettreEnLivraison($commande);
+                }
+                // Le code que le client dicte à la remise : sans lui, le vendeur
+                // déclarerait seul un fait dont il est le bénéficiaire.
+                $this->passe->livrer($commande, $r->input('code'));
+            });
         } catch (RuntimeException $e) {
             return back()->with('erreur', $e->getMessage());
         }
 
         return back()->with('ok', 'Commande livrée et réglée.');
+    }
+
+    /**
+     * Le vendeur conteste à son tour.
+     *
+     * Le dispositif serait déséquilibré sans lui : un client de mauvaise foi
+     * pourrait garder la marchandise, refuser de dicter le code, puis nier
+     * avoir reçu. Le commerçant doit pouvoir saisir l'administration.
+     */
+    public function contester(Request $r, Commande $commande)
+    {
+        $this->verifierCommande($r, $commande);
+
+        $d = $r->validate(['motif' => 'required|string|min:10|max:300']);
+
+        try {
+            $this->passe->contester($commande, 'vendeur', $d['motif']);
+        } catch (RuntimeException $e) {
+            return back()->with('erreur', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Litige ouvert. L\'administration va examiner le dossier.');
     }
 
     /**

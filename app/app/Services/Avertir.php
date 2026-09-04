@@ -51,12 +51,21 @@ class Avertir
         $envois = match ($etat) {
             'expediee' => [[$client, new EtapeCommande($commande,
                 'Votre commande est partie',
-                [
+                array_filter([
                     "La commande {$reference} a quitté le magasin.",
                     $commande->paiement === 'livraison'
                         ? "Préparez {$total} F : vous réglerez au livreur."
                         : 'Vous serez contacté pour le règlement.',
-                ],
+                    // Le code de remise voyage avec l'annonce du départ : le
+                    // client doit l'avoir sous les yeux quand on sonne, et tous
+                    // n'auront pas ouvert leur suivi de commande à ce
+                    // moment-là.
+                    $commande->code_livraison
+                        ? "Votre code de remise : {$commande->code_livraison}. Ne le "
+                          . "donnez au livreur qu'en recevant le colis et en payant : "
+                          . "c'est lui qui prouve que la livraison a eu lieu."
+                        : null,
+                ]),
                 'Suivre ma commande', $suivi)]],
 
             'livree' => [[$client, new EtapeCommande($commande,
@@ -94,6 +103,17 @@ class Avertir
                     'Motif : ' . ($commande->motif ?: 'non précisé') . '.',
                 ],
                 'Voir mes commandes', route('mes-commandes'))]],
+
+            'litige' => [[$client, new EtapeCommande($commande,
+                'Litige ouvert sur votre commande',
+                [
+                    "Un litige a été ouvert sur la commande {$reference} par "
+                    . ($commande->litige_par === 'client' ? 'vous' : 'le vendeur') . '.',
+                    'Motif : ' . ($commande->litige_motif ?: 'non précisé') . '.',
+                    "L'administration de FamFer examine les deux versions et "
+                    . "tranchera. Aucune commission n'est due tant que le litige dure.",
+                ],
+                'Voir ma commande', $suivi)]],
 
             default => [],
         };

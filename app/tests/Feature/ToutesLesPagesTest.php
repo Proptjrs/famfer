@@ -147,6 +147,7 @@ class ToutesLesPagesTest extends TestCase
             route('admin.commandes'),
             route('admin.commandes', ['etat' => 'en_preparation']),
             route('admin.revenus'),
+            route('admin.litiges'),
         ] as $url) {
             $this->actingAs($this->admin)->get($url)->assertOk();
         }
@@ -169,7 +170,7 @@ class ToutesLesPagesTest extends TestCase
             'compte', 'adresses', 'vendeur.ouvrir', 'vendeur.tableau',
             'vendeur.produits', 'vendeur.produit.nouveau', 'vendeur.produit.editer',
             'vendeur.commandes', 'vendeur.commissions', 'vendeur.boutique',
-            'admin.tableau', 'admin.boutiques', 'admin.commandes', 'admin.revenus',
+            'admin.tableau', 'admin.boutiques', 'admin.commandes', 'admin.revenus', 'admin.litiges',
         ];
 
         $oubliees = collect(Route::getRoutes())

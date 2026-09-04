@@ -65,6 +65,10 @@ Route::middleware('auth')->group(function () {
         ->name('mes-commandes.detail');
     Route::post('/mes-commandes/{commande}/annuler', [ClientController::class, 'annuler'])
         ->name('commande.annuler');
+    Route::post('/mes-commandes/{commande}/confirmer', [ClientController::class, 'confirmer'])
+        ->name('commande.confirmer');
+    Route::post('/mes-commandes/{commande}/contester', [ClientController::class, 'contester'])
+        ->name('commande.contester');
     Route::post('/mes-commandes/{commande}/noter', [ClientController::class, 'noter'])
         ->name('commande.noter');
 
@@ -104,6 +108,8 @@ Route::middleware('auth')->prefix('vendeur')->name('vendeur.')->group(function (
         ->name('refuser');
     Route::post('/commande/{commande}/retourner', [VendeurController::class, 'retourner'])
         ->name('retourner');
+    Route::post('/commande/{commande}/contester', [VendeurController::class, 'contester'])
+        ->name('contester');
 
     Route::get('/commissions', [VendeurController::class, 'commissions'])->name('commissions');
 
@@ -123,5 +129,8 @@ Route::middleware(['auth', 'admin'])->prefix('administration')->name('admin.')->
         ->name('officielle');
     Route::get('/commandes', [AdminController::class, 'commandes'])->name('commandes');
     Route::get('/revenus', [AdminController::class, 'revenus'])->name('revenus');
+    Route::get('/litiges', [AdminController::class, 'litiges'])->name('litiges');
+    Route::post('/commande/{commande}/trancher', [AdminController::class, 'trancher'])
+        ->name('trancher');
     Route::post('/boutique/{boutique}/taux', [AdminController::class, 'taux'])->name('taux');
 });

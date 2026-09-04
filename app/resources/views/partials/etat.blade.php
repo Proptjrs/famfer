@@ -16,6 +16,7 @@
     'refusee' => ['Refusée à la livraison', 'etiq-rouge'],
     'annulee' => ['Annulée', 'etiq-gris'],
     'retournee' => ['Retournée', 'etiq-rouge'],
+    'litige' => ['Litige en cours', 'etiq-orange'],
     default => [$etat, 'etiq-gris'],
   };
 @endphp

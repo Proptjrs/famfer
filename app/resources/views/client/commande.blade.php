@@ -38,6 +38,75 @@
   <div class="avis avis-err">{{ $commande->motif }}</div>
 @endif
 
+{{-- Le code de remise.
+
+     C'est la piece maitresse du paiement a la livraison. Le vendeur ne peut
+     pas clore la commande sans ce code, que le client ne dicte qu'en recevant
+     le colis. Sans lui, le commercant declarerait seul une livraison dont il
+     est le beneficiaire. --}}
+@if($commande->code_livraison && in_array($commande->etat, ['expediee', 'en_livraison'], true))
+  <div class="carte" style="margin-bottom:14px;border:1px solid var(--orange);
+              display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <div>
+      <div style="color:var(--gris);font-size:.82rem">Votre code de remise</div>
+      <div class="mono" style="font-size:2rem;font-weight:800;letter-spacing:.14em">
+        {{ $commande->code_livraison }}
+      </div>
+    </div>
+    <div style="flex:1 1 260px;font-size:.88rem;color:var(--gris)">
+      Ne le donnez au livreur <strong>qu'au moment ou vous recevez le colis et
+      reglez les {{ number_format($commande->total, 0, ',', ' ') }} F</strong>.
+      C'est ce code qui prouve que la livraison a eu lieu.
+    </div>
+  </div>
+@endif
+
+{{-- Les deux recours du client. Le premier, parce que le vendeur peut oublier
+     de cloturer ; le second, parce qu'il peut mentir. --}}
+@if($commande->confirmableParLeClient())
+  <form method="POST" action="{{ route('commande.confirmer', $commande) }}"
+        style="margin-bottom:14px">
+    @csrf
+    <button class="btn">J'ai recu ma commande et je l'ai payee</button>
+    <span style="color:var(--gris);font-size:.85rem;margin-left:8px">
+      Votre confirmation cloture la vente, meme si le vendeur ne l'a pas fait.
+    </span>
+  </form>
+@endif
+
+@if($commande->contestableParLeClient())
+  <details class="carte" style="margin-bottom:14px">
+    <summary style="cursor:pointer;font-weight:600">
+      @if($commande->etat === 'refusee')
+        Ce refus est faux : j'ai bien recu et paye cette commande
+      @else
+        Je n'ai jamais recu cette commande
+      @endif
+    </summary>
+    <form method="POST" action="{{ route('commande.contester', $commande) }}"
+          style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+      @csrf
+      <input name="motif" required minlength="10" maxlength="300"
+             placeholder="Expliquez ce qui s'est passe (10 caracteres minimum)"
+             style="flex:1 1 320px;padding:8px 10px;border:1px solid var(--bord);
+                    border-radius:var(--r)">
+      <button class="btn btn-clair">Ouvrir un litige</button>
+    </form>
+    <p style="color:var(--gris);font-size:.84rem;margin:8px 0 0">
+      L'administration de FamFer examinera les deux versions et tranchera.
+    </p>
+  </details>
+@endif
+
+@if($commande->enLitige())
+  <div class="avis" style="background:var(--orange-pale);color:var(--orange-fonce)">
+    <strong>Litige en cours d'examen.</strong>
+    Ouvert par {{ $commande->litige_par === 'client' ? 'vous' : 'le vendeur' }}
+    le {{ $commande->litige_le?->format('d/m/Y') }} :
+    {{ $commande->litige_motif }}
+  </div>
+@endif
+
 <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
   <div style="flex:1 1 400px;min-width:0">
 

@@ -48,6 +48,66 @@ vente qui n'a pas eu lieu serait le punir deux fois. C'est le coût que la
 plateforme accepte pour permettre le paiement à la livraison — et il est chiffré
 sur le tableau des revenus, sous « perdue sur refus et retours ».
 
+## Comment sait-on qu'il a vraiment payé ?
+
+C'est la question qui décide de la survie du modèle, et la première version n'y
+répondait pas. « Livrée » et « refusée » étaient toutes deux déclarées par le
+vendeur, et par lui seul. Il était donc l'unique témoin d'un fait sur lequel il
+avait intérêt à mentir : livrer, encaisser les espèces à la porte, puis déclarer
+« refusée ». Il gardait l'argent, le stock lui revenait, et la règle « un refus
+ne coûte rien » — écrite en faveur du commerçant honnête — lui offrait la
+commission par-dessus le marché.
+
+Le paiement à la livraison n'a pas de tiers de confiance : c'est ce qui le rend
+accessible, et ce qui le rend fragile. À défaut de séquestre, on fait témoigner
+les deux parties.
+
+### 1. Le code de remise
+
+L'expédition tire six chiffres au hasard, communiqués **au client seul** — sur son
+suivi de commande et dans le courriel de départ. Le vendeur ne peut pas clôturer
+sans ce code, que l'acheteur ne dicte qu'en recevant le colis et en payant.
+
+Le code n'apparaît jamais sur l'écran du vendeur : sinon il le recopierait sans
+avoir vu personne, et la preuve ne prouverait plus rien. Un essai le vérifie.
+
+### 2. La confirmation du client
+
+Le client peut déclarer de son côté « j'ai reçu et j'ai payé ». Sa parole vaut
+celle du vendeur : si un commerçant a encaissé puis annoncé un refus, l'acheteur
+le contredit et la commission redevient due.
+
+C'est aussi utile sans aucune fraude — un vendeur débordé qui ne clôture jamais
+laisserait ses clients sans possibilité de noter.
+
+### 3. Le litige, et l'arbitrage
+
+Quand les deux versions divergent, la commande passe en **litige** et
+l'administration tranche vers « livrée », « refusée » ou « annulée ». L'état
+contesté est conservé, sans quoi l'arbitre ne saurait pas ce qui était affirmé au
+départ. Le dossier lui montre l'indice le plus fort : **le code a-t-il été
+remis ?** S'il l'a été, la livraison a matériellement eu lieu.
+
+Les deux camps peuvent ouvrir un litige. Sans le recours du vendeur, le dispositif
+serait déséquilibré : un client de mauvaise foi garderait la marchandise,
+refuserait de dicter le code, puis nierait avoir reçu.
+
+Tant que le litige dure, **aucune commission n'est due**.
+
+### 4. Le taux de refus par boutique
+
+Le code couvre une commande ; ce taux couvre le commerçant. Un vendeur qui
+déclare des refus fictifs le fait monter, seul, pendant que ses concurrents
+restent bas. Les boutiques de moins de cinq commandes closes n'y figurent pas :
+deux refus sur trois ventes est le lot d'un débutant malchanceux, pas un indice.
+
+### Ce que cela ne couvre pas
+
+Un vendeur et un client **de connivence** peuvent toujours déclarer un faux refus
+tous les deux. Aucun mécanisme logiciel ne les départagera : seul le taux de refus
+finit par les désigner, et la sanction est alors la suspension de la boutique. Une
+place de marché en espèces ne peut pas faire mieux sans encaisser elle-même.
+
 ## Le taux se négocie
 
 Il est stocké **par boutique**, en pour mille (`80` = 8 %), et l'administration

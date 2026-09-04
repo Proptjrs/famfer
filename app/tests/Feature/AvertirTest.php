@@ -124,7 +124,7 @@ class AvertirTest extends TestCase
         $passe->mettreEnLivraison($c->fresh());
 
         Notification::fake();
-        $passe->livrer($c->fresh());
+        $passe->livrer($c->fresh(), $c->fresh()->code_livraison);
 
         Notification::assertSentTo($this->client, EtapeCommande::class,
             fn (EtapeCommande $n) => str_contains($n->bouton, 'avis'));
@@ -265,7 +265,7 @@ class AvertirTest extends TestCase
         $passe = app(PasseCommande::class);
         $passe->expedier($c);
         $passe->mettreEnLivraison($c->fresh());
-        $passe->livrer($c->fresh());
+        $passe->livrer($c->fresh(), $c->fresh()->code_livraison);
 
         $this->actingAs($this->vendeur)
             ->post(route('vendeur.retourner', $c->fresh()), [
@@ -307,7 +307,7 @@ class AvertirTest extends TestCase
     public function test_aucun_etat_nest_mort(): void
     {
         $atteignables = ['en_preparation', 'expediee', 'en_livraison',
-                         'livree', 'refusee', 'annulee', 'retournee'];
+                         'livree', 'refusee', 'litige', 'annulee', 'retournee'];
 
         $this->assertSame(
             $atteignables,

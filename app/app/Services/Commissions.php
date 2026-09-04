@@ -118,6 +118,49 @@ class Commissions
         ];
     }
 
+    /**
+     * Le taux de refus de chaque boutique.
+     *
+     * C'est le detecteur de fraude, et il ne coute rien : un commercant qui
+     * encaisse puis declare « refusee » pour eviter la commission fait monter
+     * ce taux, seul, pendant que ses concurrents restent bas. La preuve par le
+     * code de remise couvre la commande ; celui-ci couvre le commercant.
+     *
+     * Sous cinq commandes closes, le chiffre ne veut rien dire — deux refus sur
+     * trois ventes est le lot d'un debutant malchanceux, pas un indice.
+     */
+    public function tauxDeRefusParBoutique(int $minimum = 5)
+    {
+        return Boutique::query()
+            ->select('boutiques.*')
+            ->selectRaw($this->compte('livree') . ' as nb_livrees')
+            ->selectRaw($this->compte('refusee') . ' as nb_refusees')
+            ->get()
+            ->map(function (Boutique $b) {
+                $closes = (int) $b->nb_livrees + (int) $b->nb_refusees;
+                $b->closes = $closes;
+                $b->taux_refus = $closes > 0
+                    ? round((int) $b->nb_refusees * 100 / $closes, 1)
+                    : 0.0;
+
+                return $b;
+            })
+            ->filter(fn (Boutique $b) => $b->closes >= $minimum)
+            ->sortByDesc('taux_refus')
+            ->values();
+    }
+
+    /** Le sous-compte des commandes d'une boutique dans un etat donne. */
+    private function compte(string $etat): string
+    {
+        return sprintf(
+            'coalesce((select count(distinct c.id) from commandes c
+                join lignes_commande l on l.commande_id = c.id
+                where l.boutique_id = boutiques.id and c.etat = %s), 0)',
+            "'" . $etat . "'"
+        );
+    }
+
     /** Les boutiques qui doivent le plus, pour la relance. */
     public function classement(int $limite = 10): Collection
     {

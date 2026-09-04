@@ -232,6 +232,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--bord);vertical-align:top}
               <a href="{{ route('admin.boutiques') }}">Les boutiques</a>
               <a href="{{ route('admin.commandes') }}">Les commandes</a>
               <a href="{{ route('admin.revenus') }}">Les revenus</a>
+              <a href="{{ route('admin.litiges') }}">Les litiges</a>
             @endif
             <hr>
             <form method="POST" action="{{ route('deconnexion') }}">
