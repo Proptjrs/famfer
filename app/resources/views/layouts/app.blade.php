@@ -221,6 +221,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--bord);vertical-align:top}
               </a>
               <a href="{{ route('vendeur.produits') }}">Mes produits</a>
               <a href="{{ route('vendeur.commandes') }}">Mes ventes</a>
+              <a href="{{ route('vendeur.commissions') }}">Ma commission</a>
               <a href="{{ route('vendeur.boutique') }}">Ma vitrine</a>
             @else
               <hr><a href="{{ route('vendeur.ouvrir') }}">★ Vendez sur FamFer</a>
@@ -230,6 +231,7 @@ td{padding:11px 10px;border-bottom:1px solid var(--bord);vertical-align:top}
               <a href="{{ route('admin.tableau') }}">Tableau de bord</a>
               <a href="{{ route('admin.boutiques') }}">Les boutiques</a>
               <a href="{{ route('admin.commandes') }}">Les commandes</a>
+              <a href="{{ route('admin.revenus') }}">Les revenus</a>
             @endif
             <hr>
             <form method="POST" action="{{ route('deconnexion') }}">

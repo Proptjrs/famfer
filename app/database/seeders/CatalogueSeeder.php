@@ -27,12 +27,19 @@ class CatalogueSeeder extends Seeder
 {
     private ?array $images = null;
 
-    /** nom, ville, boutique officielle, écart de prix appliqué. */
+    /**
+     * nom, ville, boutique officielle, écart de prix, commission en pour mille.
+     *
+     * Les taux diffèrent exprès : une enseigne démarchée qui apporte du volume
+     * négocie mieux qu'un nouveau venu, et c'est ce qui rend intéressant le
+     * « taux moyen obtenu » du tableau de bord — avec un taux unique, il ne
+     * dirait rien que le contrat ne dise déjà.
+     */
     private const BOUTIQUES = [
-        ['Quincaillerie Ndiaye & Frères', 'Pikine', true, 1.00],
-        ['Établissements Sow Métaux', 'Guédiawaye', true, 0.94],
-        ['Comptoir du Fer Dakarois', 'Dakar', false, 1.06],
-        ['Fer Express Thiaroye', 'Thiaroye', false, 0.98],
+        ['Quincaillerie Ndiaye & Frères', 'Pikine', true, 1.00, 60],
+        ['Établissements Sow Métaux', 'Guédiawaye', true, 0.94, 65],
+        ['Comptoir du Fer Dakarois', 'Dakar', false, 1.06, 80],
+        ['Fer Express Thiaroye', 'Thiaroye', false, 0.98, 80],
     ];
 
     /** Les marques attribuées par rayon, pour que le filtre serve à quelque chose. */
@@ -79,7 +86,7 @@ class CatalogueSeeder extends Seeder
     {
         $boutiques = [];
 
-        foreach (self::BOUTIQUES as $i => [$nom, $ville, $officielle, $ecart]) {
+        foreach (self::BOUTIQUES as $i => [$nom, $ville, $officielle, $ecart, $taux]) {
             $utilisateur = User::create([
                 'name' => $nom,
                 'email' => 'vendeur' . ($i + 1) . '@famfer.sn',
@@ -99,6 +106,7 @@ class CatalogueSeeder extends Seeder
                     'adresse' => 'Marché central, ' . $ville,
                     'ville' => $ville,
                     'officielle' => $officielle,
+                    'taux_commission_pour_mille' => $taux,
                     // La dernière attend sa validation : la démonstration a
                     // besoin d'un dossier en attente à montrer.
                     'statut' => $i === 3 ? 'en_attente' : 'active',

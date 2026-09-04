@@ -8,6 +8,7 @@ use App\Models\Commande;
 use App\Models\LigneCommande;
 use App\Models\PhotoProduit;
 use App\Models\Produit;
+use App\Services\Commissions;
 use App\Services\PasseCommande;
 use App\Services\Photos;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class VendeurController extends Controller
     public function __construct(
         private PasseCommande $passe,
         private Photos $photos,
+        private Commissions $commissions,
     ) {}
 
     // ── Ouvrir une boutique ──────────────────────────────────────────────────
@@ -96,6 +98,24 @@ class VendeurController extends Controller
             'aTraiter' => $this->sesCommandes($b)
                 ->whereIn('etat', ['en_preparation', 'expediee', 'en_livraison'])
                 ->with('lignes')->orderBy('id')->limit(10)->get(),
+        ]);
+    }
+
+    /**
+     * Le relevé de commission.
+     *
+     * Le vendeur encaisse lui-même les espèces : il doit donc pouvoir vérifier
+     * ce qu'il reverse, et sur quelles ventes. Un décompte que le commerçant ne
+     * peut pas recalculer lui-même n'inspire aucune confiance.
+     */
+    public function commissions(Request $r)
+    {
+        $b = $this->boutique($r);
+
+        return view('vendeur.commissions', [
+            'boutique' => $b,
+            'compte' => $this->commissions->pourBoutique($b),
+            'releve' => $this->commissions->releveMensuel($b),
         ]);
     }
 

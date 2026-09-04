@@ -17,6 +17,15 @@
     </div>
     <div style="color:var(--gris);font-size:.84rem">Volume livré</div>
   </div>
+  <div class="carte" style="border:1px solid var(--vert)">
+    <div class="mono" style="font-size:1.5rem;font-weight:800">
+      {{ number_format($chiffres['commission'], 0, ',', ' ') }} F
+    </div>
+    <div style="color:var(--gris);font-size:.84rem">
+      Commission FamFer
+      <a href="{{ route('admin.revenus') }}" style="display:block;font-size:.78rem">le détail</a>
+    </div>
+  </div>
   <div class="carte">
     <div style="font-size:1.5rem;font-weight:800">{{ $chiffres['commandes'] }}</div>
     <div style="color:var(--gris);font-size:.84rem">Commandes</div>

@@ -8,6 +8,7 @@ use App\Models\LigneCommande;
 use App\Models\Produit;
 use App\Models\User;
 use App\Services\Avertir;
+use App\Services\Commissions;
 use Illuminate\Http\Request;
 
 /**
@@ -19,7 +20,10 @@ use Illuminate\Http\Request;
  */
 class AdminController extends Controller
 {
-    public function __construct(private Avertir $avertir) {}
+    public function __construct(
+        private Avertir $avertir,
+        private Commissions $commissions,
+    ) {}
 
     public function tableau()
     {
@@ -33,6 +37,9 @@ class AdminController extends Controller
                 'clients' => User::where('role', 'client')->count(),
                 'commandes' => Commande::count(),
                 'volume_livre' => (int) (clone $livrees)->sum('total'),
+                // Sans cette ligne, aucun écran ne disait si la plateforme
+                // gagnait quelque chose.
+                'commission' => (int) (clone $livrees)->sum('commission'),
                 'a_expedier' => Commande::where('etat', 'en_preparation')->count(),
                 'en_route' => Commande::whereIn('etat', ['expediee', 'en_livraison'])->count(),
                 // Un colis refusé à la porte coûte une tournée : c'est
@@ -89,6 +96,38 @@ class AdminController extends Controller
         return back()->with('ok', $boutique->officielle
             ? $boutique->nom . ' est désormais boutique officielle.'
             : $boutique->nom . ' n\'est plus boutique officielle.');
+    }
+
+    /** Ce que la plateforme gagne — la seule page qui dise si elle vit. */
+    public function revenus()
+    {
+        return view('admin.revenus', [
+            'chiffres' => $this->commissions->pourLaPlateforme(),
+            'classement' => $this->commissions->classement(),
+        ]);
+    }
+
+    /**
+     * Renégocier le taux d'une boutique.
+     *
+     * Le taux se négocie : une enseigne qui apporte du volume n'a aucune raison
+     * de payer comme un nouveau venu. Le nouveau taux ne vaut que pour l'avenir
+     * — les commandes déjà passées portent le leur, figé.
+     */
+    public function taux(Request $r, Boutique $boutique)
+    {
+        $d = $r->validate([
+            'taux' => 'required|numeric|min:0|max:30',
+        ]);
+
+        $boutique->update([
+            'taux_commission_pour_mille' => (int) round($d['taux'] * 10),
+        ]);
+
+        return back()->with('ok', sprintf(
+            'La commission de %s passe à %s %%. Les commandes déjà passées gardent leur taux.',
+            $boutique->nom, rtrim(rtrim(number_format($d['taux'], 1, ',', ' '), '0'), ',')
+        ));
     }
 
     public function commandes(Request $r)

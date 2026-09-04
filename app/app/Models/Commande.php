@@ -34,12 +34,14 @@ class Commande extends Model
     protected $fillable = [
         'reference', 'utilisateur_id', 'destinataire', 'telephone', 'adresse_livraison',
         'etat', 'paiement', 'paye', 'sous_total', 'frais_livraison', 'total',
+        'taux_commission_pour_mille', 'commission',
         'expediee_le', 'livree_le', 'cloturee_le', 'motif',
     ];
 
     protected $casts = [
         'paye' => 'boolean',
         'sous_total' => 'integer', 'frais_livraison' => 'integer', 'total' => 'integer',
+        'taux_commission_pour_mille' => 'integer', 'commission' => 'integer',
         'expediee_le' => 'datetime', 'livree_le' => 'datetime', 'cloturee_le' => 'datetime',
     ];
 
@@ -56,6 +58,29 @@ class Commande extends Model
     public function avis(): HasMany
     {
         return $this->hasMany(Avis::class);
+    }
+
+    /**
+     * Ce que la boutique garde, sur cette commande.
+     *
+     * Le total encaissé au client, moins la commission due à la plateforme.
+     * Les frais de livraison en font partie : c'est le vendeur qui livre.
+     */
+    public function netVendeur(): int
+    {
+        return $this->total - $this->commission;
+    }
+
+    /**
+     * La commission est-elle due ?
+     *
+     * Seulement sur une commande livrée. Un colis refusé à la porte a déjà
+     * coûté une tournée au vendeur ; lui facturer en plus la commission d'une
+     * vente qui n'a pas eu lieu serait le punir deux fois.
+     */
+    public function commissionDue(): bool
+    {
+        return $this->etat === 'livree';
     }
 
     public function peutAllerVers(string $etat): bool

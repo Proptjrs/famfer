@@ -17,11 +17,12 @@ class LigneCommande extends Model
 
     protected $fillable = [
         'commande_id', 'produit_id', 'boutique_id',
-        'nom_produit', 'prix_unitaire', 'quantite', 'montant',
+        'nom_produit', 'prix_unitaire', 'quantite', 'montant', 'commission',
     ];
 
     protected $casts = [
-        'prix_unitaire' => 'integer', 'quantite' => 'integer', 'montant' => 'integer',
+        'prix_unitaire' => 'integer', 'quantite' => 'integer',
+        'montant' => 'integer', 'commission' => 'integer',
     ];
 
     public function commande(): BelongsTo

@@ -105,6 +105,8 @@ Route::middleware('auth')->prefix('vendeur')->name('vendeur.')->group(function (
     Route::post('/commande/{commande}/retourner', [VendeurController::class, 'retourner'])
         ->name('retourner');
 
+    Route::get('/commissions', [VendeurController::class, 'commissions'])->name('commissions');
+
     Route::get('/ma-boutique', [VendeurController::class, 'maBoutique'])->name('boutique');
     Route::put('/ma-boutique', [VendeurController::class, 'majBoutique'])->name('boutique.maj');
 });
@@ -120,4 +122,6 @@ Route::middleware(['auth', 'admin'])->prefix('administration')->name('admin.')->
     Route::post('/boutique/{boutique}/officielle', [AdminController::class, 'officielle'])
         ->name('officielle');
     Route::get('/commandes', [AdminController::class, 'commandes'])->name('commandes');
+    Route::get('/revenus', [AdminController::class, 'revenus'])->name('revenus');
+    Route::post('/boutique/{boutique}/taux', [AdminController::class, 'taux'])->name('taux');
 });

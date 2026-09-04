@@ -46,12 +46,14 @@ class PasseCommande
         return DB::transaction(function () use ($client, $adresse, $paiement, $contenu) {
             $lignes = [];
             $sousTotal = 0;
+            $commission = 0;
 
             foreach ($contenu as $article) {
                 // On relit sous verrou : le panier a pu être rempli il y a une
                 // heure, et le stock lu alors ne vaut plus rien.
                 $produit = Produit::whereKey($article['produit']->id)
                     ->lockForUpdate()->firstOrFail();
+                $produit->loadMissing('boutique');
 
                 // On compare au demandé, pas au disponible : servir moins
                 // sans le dire vaudrait mieux que rien, mais le client doit
@@ -69,6 +71,13 @@ class PasseCommande
                 $montant = $produit->prix * $article['quantite'];
                 $sousTotal += $montant;
 
+                // La commission se calcule ligne par ligne, au taux de la
+                // boutique qui vend. Un panier réparti sur trois enseignes aux
+                // taux différents doit produire trois montants différents ; un
+                // taux unique appliqué au total serait faux pour toutes.
+                $part = $produit->boutique->commissionSur($montant);
+                $commission += $part;
+
                 $lignes[] = [
                     'produit_id' => $produit->id,
                     'boutique_id' => $produit->boutique_id,
@@ -77,6 +86,10 @@ class PasseCommande
                     'prix_unitaire' => $produit->prix,
                     'quantite' => $article['quantite'],
                     'montant' => $montant,
+                    // Figée elle aussi, et pour la même raison : un taux
+                    // renégocié le mois prochain ne doit pas refacturer une
+                    // vente déjà conclue.
+                    'commission' => $part,
                 ];
             }
 
@@ -96,6 +109,16 @@ class PasseCommande
                 'sous_total' => $sousTotal,
                 'frais_livraison' => $frais,
                 'total' => $sousTotal + $frais,
+                // La commission ne porte que sur la marchandise : les frais de
+                // livraison couvrent une tournée que le vendeur paie de sa
+                // poche, en prélever une part reviendrait à taxer son essence.
+                'commission' => $commission,
+                // Le taux effectif de la commande, déduit et non choisi : sur un
+                // panier multi-boutiques il n'existe pas de taux unique, celui-ci
+                // est la moyenne réellement appliquée.
+                'taux_commission_pour_mille' => $sousTotal > 0
+                    ? intdiv($commission * 1000, $sousTotal)
+                    : 0,
             ]);
 
             foreach ($lignes as $ligne) {

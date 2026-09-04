@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "famfer",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["app/artisan", "serve", "--port=8090"],
+      "port": 8090
+    }
+  ]
+}

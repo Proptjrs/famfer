@@ -12,10 +12,12 @@ class Boutique extends Model
     protected $fillable = [
         'utilisateur_id', 'nom', 'slug', 'description', 'telephone',
         'adresse', 'ville', 'officielle', 'statut', 'motif_suspension',
+        'taux_commission_pour_mille',
     ];
 
     protected $casts = [
         'officielle' => 'boolean',
+        'taux_commission_pour_mille' => 'integer',
         'note_sur_cent' => 'integer',
         'nombre_avis' => 'integer',
     ];
@@ -28,6 +30,23 @@ class Boutique extends Model
     public function produits(): HasMany
     {
         return $this->hasMany(Produit::class);
+    }
+
+    /** Le taux en pour cent, pour l'affichage : 80 pour mille = 8 %. */
+    public function tauxPourCent(): float
+    {
+        return $this->taux_commission_pour_mille / 10;
+    }
+
+    /**
+     * La commission due sur un montant de marchandise.
+     *
+     * En division entière : un franc n'a pas de sous-multiple, et arrondir au
+     * plus proche donnerait à la plateforme un franc qu'elle n'a pas gagné.
+     */
+    public function commissionSur(int $montant): int
+    {
+        return intdiv($montant * $this->taux_commission_pour_mille, 1000);
     }
 
     public function estVisible(): bool
