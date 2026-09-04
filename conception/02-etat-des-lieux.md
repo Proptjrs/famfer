@@ -3,7 +3,7 @@
 Document de suivi. Il dit ce qui existe réellement dans `app/`, ce qui
 l'éprouve, et ce qui reste.
 
-**Au 3 septembre 2026 : 93 tests, 589 assertions, tous verts sur PostgreSQL.**
+**Au 3 septembre 2026 : 118 tests, 686 assertions, tous verts sur PostgreSQL.**
 
 ---
 
@@ -232,3 +232,36 @@ est maintenant relative, et suit l'hôte réellement servi.
 Les illustrations sont versionnées et voyagent dans l'image Docker — le disque
 d'un conteneur ne survit pas à un redéploiement. Les photos des vendeurs, elles,
 restent hors du dépôt.
+
+
+---
+
+## Ce qui reste à faire, sans détour
+
+L'application est **utilisable de bout en bout** : toutes les pages répondent
+dans les trois rôles, toutes les actions d'écriture sont éprouvées dans le sens
+qui marche comme dans celui du refus, et deux tests le garantissent pour la
+suite — `ToutesLesPagesTest` refuse de passer si une page nouvelle échappe à la
+vérification.
+
+Elle n'est pas pour autant prête à recevoir de vrais clients. Trois manques, par
+ordre d'importance.
+
+**L'argent ne bouge pas.** Wave et Orange Money figurent comme modes de
+règlement, mais aucun appel n'est fait à un opérateur : le client est « rappelé ».
+Seul le paiement à la livraison fonctionne réellement, et c'est le vendeur qui
+encaisse. Un vrai encaissement demande un contrat commercial, pas du code.
+
+**Rien ne prévient personne.** Aucun courriel ne part : ni confirmation de
+commande, ni avis d'expédition, ni alerte au vendeur quand une commande arrive.
+Un vendeur qui ne consulte pas son tableau de bord ne saura pas qu'on lui a
+acheté quelque chose.
+
+**Les prix et les photos sont des approximations.** Les prix sont dérivés du nom
+de l'article ; les illustrations valent pour une famille, pas pour un produit.
+L'un et l'autre tiennent pour une démonstration, pas pour un magasin.
+
+Et deux limites d'hébergement, à connaître avant la mise en ligne : sur le plan
+gratuit de Render, le disque est éphémère — les photos téléversées par les
+vendeurs disparaissent au redéploiement — et le service s'endort après quinze
+minutes sans visite.
