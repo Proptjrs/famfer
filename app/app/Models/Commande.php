@@ -18,7 +18,11 @@ class Commande extends Model
     /** Les états, et ceux qu'on peut atteindre depuis chacun. */
     public const SUITES = [
         'en_preparation' => ['expediee', 'annulee'],
-        'expediee'       => ['en_livraison', 'annulee'],
+        // « refusee » aussi depuis « expediee » : le passage par « en livraison »
+        // est facultatif — un vendeur qui livre lui-même annonce la remise, pas
+        // le départ du camion — et un colis se refuse à la porte dans les deux
+        // cas. Sans cela, l'état restait inatteignable en pratique.
+        'expediee'       => ['en_livraison', 'livree', 'refusee', 'annulee'],
         'en_livraison'   => ['livree', 'refusee'],
         'livree'         => ['retournee'],
         // Terminaux.

@@ -100,6 +100,10 @@ Route::middleware('auth')->prefix('vendeur')->name('vendeur.')->group(function (
     Route::get('/commandes', [VendeurController::class, 'commandes'])->name('commandes');
     Route::post('/commande/{commande}/expedier', [VendeurController::class, 'expedier'])->name('expedier');
     Route::post('/commande/{commande}/livrer', [VendeurController::class, 'livrer'])->name('livrer');
+    Route::post('/commande/{commande}/refuser', [VendeurController::class, 'refuser'])
+        ->name('refuser');
+    Route::post('/commande/{commande}/retourner', [VendeurController::class, 'retourner'])
+        ->name('retourner');
 
     Route::get('/ma-boutique', [VendeurController::class, 'maBoutique'])->name('boutique');
     Route::put('/ma-boutique', [VendeurController::class, 'majBoutique'])->name('boutique.maj');

@@ -24,7 +24,11 @@ use RuntimeException;
  */
 class PasseCommande
 {
-    public function __construct(private Panier $panier, private Livraison $livraison) {}
+    public function __construct(
+        private Panier $panier,
+        private Livraison $livraison,
+        private Avertir $avertir,
+    ) {}
 
     /**
      * Crée la commande depuis le panier en session.
@@ -100,7 +104,10 @@ class PasseCommande
 
             $this->panier->vider();
 
-            return $commande->fresh('lignes');
+            $commande = $commande->fresh('lignes');
+            $this->avertir->surNouvelleCommande($commande);
+
+            return $commande;
         });
     }
 
@@ -185,7 +192,14 @@ class PasseCommande
             $commande->etat = $vers;
             $commande->save();
 
-            return $commande->fresh('lignes');
+            $commande = $commande->fresh('lignes');
+
+            // Prevenir passe par le meme goulot que la transition : tout
+            // changement d'etat, d'ou qu'il vienne, declenche le courriel qui
+            // lui correspond. Rien ne part avant la validation.
+            $this->avertir->surEtat($commande, $vers);
+
+            return $commande;
         });
     }
 

@@ -3,7 +3,7 @@
 Document de suivi. Il dit ce qui existe réellement dans `app/`, ce qui
 l'éprouve, et ce qui reste.
 
-**Au 3 septembre 2026 : 118 tests, 686 assertions, tous verts sur PostgreSQL.**
+**Au 3 septembre 2026 : 133 tests, 716 assertions, tous verts sur PostgreSQL.**
 
 ---
 
@@ -236,6 +236,56 @@ restent hors du dépôt.
 
 ---
 
+## Deux états morts, et personne n'était prévenu
+
+L'audit des transitions a montré que **deux états sur sept étaient
+inatteignables** : `refusee` et `retournee` existaient dans la machine, et aucun
+écran ne pouvait les déclencher. Conséquence directe : le taux de refus, mis en
+avant sur les deux tableaux de bord comme l'indicateur du risque propre au
+paiement à la livraison, **affichait zéro quoi qu'il arrive**.
+
+Le vendeur enregistre désormais un refus à la porte ou un retour après
+livraison, avec motif obligatoire — c'est ce qui permet de savoir si le problème
+se répète. Dans les deux cas la marchandise revient en stock, et le compteur de
+ventes redescend : une vente rendue n'est pas une vente.
+
+La table des transitions autorisait `refusee` depuis `en_livraison` seulement.
+Or le passage par cet état est facultatif — un vendeur qui livre lui-même
+annonce la remise, pas le départ du camion — donc le refus était impossible en
+pratique. Il part maintenant aussi d'`expediee`.
+
+`AvertirTest` vérifie qu'aucun état ne redevient mort.
+
+## Les courriels
+
+Rien ne partait. Un commerçant qui ne consultait pas son tableau de bord ne
+savait pas qu'on lui avait acheté quelque chose, et un colis pouvait dormir une
+semaine dans son magasin. Sur une place de marché, le courriel n'est pas un
+ornement : c'est ce qui déclenche le travail.
+
+Une commande prévient **les deux parties, mais pas du même message** : le client
+reçoit une confirmation avec le montant à préparer pour le livreur, chaque
+vendeur concerné reçoit un ordre de travail. Un panier réparti sur trois
+boutiques prévient les trois — et chacune une seule fois, même si elle fournit
+plusieurs articles. Puis l'expédition, la livraison (qui invite à noter), le
+refus, l'annulation, le retour. L'administration prévient aussi de sa décision
+sur une boutique.
+
+Deux précautions, et ce sont les seules choses intéressantes du service :
+
+- **Rien ne part avant la validation de la transaction** (`DB::afterCommit`).
+  Un courriel envoyé depuis une transaction ensuite annulée annonce un fait qui
+  n'a pas eu lieu, et l'on ne rattrape pas un courriel parti.
+- **Une messagerie en panne ne fait pas échouer une vente.** L'échec est
+  journalisé, la commande continue. Arbitrage délibéré : mieux vaut un client
+  non prévenu qu'une vente perdue.
+
+Les deux sont testés, dont le retour arrière.
+
+En développement, `MAIL_MAILER=log` écrit les courriels dans `storage/logs` au
+lieu de les envoyer. En production, `render.yaml` attend un vrai serveur SMTP :
+sans lui, personne n'est prévenu de rien.
+
 ## Ce qui reste à faire, sans détour
 
 L'application est **utilisable de bout en bout** : toutes les pages répondent
@@ -251,11 +301,6 @@ ordre d'importance.
 règlement, mais aucun appel n'est fait à un opérateur : le client est « rappelé ».
 Seul le paiement à la livraison fonctionne réellement, et c'est le vendeur qui
 encaisse. Un vrai encaissement demande un contrat commercial, pas du code.
-
-**Rien ne prévient personne.** Aucun courriel ne part : ni confirmation de
-commande, ni avis d'expédition, ni alerte au vendeur quand une commande arrive.
-Un vendeur qui ne consulte pas son tableau de bord ne saura pas qu'on lui a
-acheté quelque chose.
 
 **Les prix et les photos sont des approximations.** Les prix sont dérivés du nom
 de l'article ; les illustrations valent pour une famille, pas pour un produit.

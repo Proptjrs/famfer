@@ -67,6 +67,44 @@
         <span style="color:var(--rouge);font-size:.85rem;margin-left:auto">{{ $c->motif }}</span>
       @endif
     </div>
+
+      {{-- Le refus a la porte est le risque propre au paiement a la livraison :
+           la tournee a eu lieu et n'a rien rapporte. Il doit s'enregistrer, sans
+           quoi le taux de refus des tableaux de bord reste a zero quoi qu'il
+           arrive. --}}
+      @if(in_array($c->etat, ['expediee', 'en_livraison']))
+        <details style="margin-top:10px">
+          <summary style="cursor:pointer;color:var(--rouge);font-size:.86rem;font-weight:600">
+            Le client a refuse le colis
+          </summary>
+          <form method="POST" action="{{ route('vendeur.refuser', $c) }}"
+                style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:flex-end">
+            @csrf
+            <div style="flex:1 1 260px">
+              <label>Pourquoi</label>
+              <input name="motif" required maxlength="200"
+                     placeholder="Absent, a change d'avis, marchandise non conforme...">
+            </div>
+            <button class="btn btn-sm btn-rouge">Enregistrer le refus</button>
+          </form>
+        </details>
+      @elseif($c->etat === 'livree')
+        <details style="margin-top:10px">
+          <summary style="cursor:pointer;color:var(--gris-fonce);font-size:.86rem">
+            Enregistrer un retour
+          </summary>
+          <form method="POST" action="{{ route('vendeur.retourner', $c) }}"
+                style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:flex-end">
+            @csrf
+            <div style="flex:1 1 260px">
+              <label>Motif du retour</label>
+              <input name="motif" required maxlength="200"
+                     placeholder="Article non conforme, dimension erronee...">
+            </div>
+            <button class="btn btn-sm btn-clair">Enregistrer le retour</button>
+          </form>
+        </details>
+      @endif
   </div>
 @empty
   <div class="carte vide">

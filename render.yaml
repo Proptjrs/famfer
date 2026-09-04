@@ -80,6 +80,26 @@ services:
       - key: SESSION_DRIVER
         value: database
 
+      # La messagerie. Sans elle, « log » reste actif et personne n'est prévenu
+      # de rien : ni le client de sa commande, ni le vendeur qu'il a une vente à
+      # préparer. Les identifiants ne figurent jamais dans le dépôt.
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_SCHEME
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        value: ne-pas-repondre@famfer.sn
+      - key: MAIL_FROM_NAME
+        value: FamFer
+
       # Le semis de démonstration reste éteint en production : il ne s'allume
       # que le temps d'une présentation, puis on le remet à false.
       - key: DONNEES_DEMO

@@ -276,6 +276,56 @@ class VendeurController extends Controller
         return back()->with('ok', 'Commande livrée et réglée.');
     }
 
+    /**
+     * Le client a refusé le colis à la porte.
+     *
+     * C'est le risque propre au paiement à la livraison, et il n'était
+     * enregistrable nulle part : l'état existait dans la machine, aucun écran
+     * ne pouvait l'atteindre, et le taux de refus des tableaux de bord affichait
+     * donc zéro quoi qu'il arrive.
+     *
+     * Distinct d'une annulation : la tournée a eu lieu, elle a coûté. La
+     * marchandise, elle, rentre et retourne en stock.
+     */
+    public function refuser(Request $r, Commande $commande)
+    {
+        $this->verifierCommande($r, $commande);
+
+        $d = $r->validate(['motif' => 'required|string|max:200'], [
+            'motif.required' => 'Dites pourquoi le colis a été refusé : '
+                . 'c\'est ce qui permet de savoir si le problème se répète.',
+        ]);
+
+        try {
+            $this->passe->refuser($commande, $d['motif']);
+        } catch (RuntimeException $e) {
+            return back()->with('erreur', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Refus enregistré. La marchandise revient en stock.');
+    }
+
+    /**
+     * Le client rend une commande déjà livrée.
+     *
+     * La marchandise revient, donc le stock aussi. Le compteur de ventes
+     * redescend : une vente rendue n'est pas une vente.
+     */
+    public function retourner(Request $r, Commande $commande)
+    {
+        $this->verifierCommande($r, $commande);
+
+        $d = $r->validate(['motif' => 'required|string|max:200']);
+
+        try {
+            $this->passe->retourner($commande, $d['motif']);
+        } catch (RuntimeException $e) {
+            return back()->with('erreur', $e->getMessage());
+        }
+
+        return back()->with('ok', 'Retour enregistré. La marchandise revient en stock.');
+    }
+
     // ── La boutique ──────────────────────────────────────────────────────────
 
     public function maBoutique(Request $r)

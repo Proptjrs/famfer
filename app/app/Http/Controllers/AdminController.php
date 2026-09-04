@@ -7,6 +7,7 @@ use App\Models\Commande;
 use App\Models\LigneCommande;
 use App\Models\Produit;
 use App\Models\User;
+use App\Services\Avertir;
 use Illuminate\Http\Request;
 
 /**
@@ -18,6 +19,8 @@ use Illuminate\Http\Request;
  */
 class AdminController extends Controller
 {
+    public function __construct(private Avertir $avertir) {}
+
     public function tableau()
     {
         $livrees = Commande::where('etat', 'livree');
@@ -64,6 +67,7 @@ class AdminController extends Controller
     public function activer(Boutique $boutique)
     {
         $boutique->update(['statut' => 'active', 'motif_suspension' => null]);
+        $this->avertir->surDecisionBoutique($boutique->fresh(), true);
 
         return back()->with('ok', $boutique->nom . ' est active et visible au catalogue.');
     }
@@ -72,6 +76,7 @@ class AdminController extends Controller
     {
         $d = $r->validate(['motif' => 'required|string|max:200']);
         $boutique->update(['statut' => 'suspendue', 'motif_suspension' => $d['motif']]);
+        $this->avertir->surDecisionBoutique($boutique->fresh(), false);
 
         return back()->with('ok', $boutique->nom . ' est suspendue. Ses produits sont retirés.');
     }
