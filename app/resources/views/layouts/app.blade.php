@@ -17,9 +17,16 @@
   } catch (e) { /* navigation privée : on garde le thème du système */ }
 </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap">
+{{-- Les polices sont servies par l'application. Plus aucune requete ne part
+     vers un serveur tiers : ni resolution DNS, ni poignee de main TLS avant
+     que le texte ne s'affiche dans sa vraie fonte — et l'adresse du visiteur
+     ne quitte plus le site. --}}
+<link rel="preload" as="font" type="font/woff2" crossorigin
+      href="{{ asset('fonts/inter-400-700-latin.woff2') }}">
+<link rel="preload" as="font" type="font/woff2" crossorigin
+      href="{{ asset('fonts/archivo-700-800-latin.woff2') }}">
+
+<link rel="stylesheet" href="{{ asset('css/polices.css') }}?v={{ @filemtime(public_path('css/polices.css')) ?: 1 }}">
 <link rel="stylesheet" href="{{ asset('css/famfer.css') }}?v={{ @filemtime(public_path('css/famfer.css')) ?: 1 }}">
 @stack('styles')
 </head>

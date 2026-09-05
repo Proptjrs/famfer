@@ -120,10 +120,59 @@ C'est nécessaire parce qu'**une régression d'accessibilité ne se voit pas** :
 champ qui perd son étiquette continue de s'afficher normalement, une image sans
 alternative textuelle aussi. Seule une vérification automatique les attrape.
 
+## Les polices sont servies par l'application
+
+Elles venaient de Google Fonts. Trois raisons de les rapatrier, dans cet ordre.
+
+**Technique.** Un tiers ajoute une résolution DNS, une poignée de main TLS et un
+aller-retour avant que le premier caractère ne s'affiche dans sa vraie fonte. Sur
+une connexion lente — c'est-à-dire chez une partie des acheteurs — cela se
+compte en secondes.
+
+**Fiabilité.** Le site ne dépend plus d'un service extérieur pour s'afficher
+correctement.
+
+**Confidentialité.** Chaque visiteur déclenchait une requête vers un serveur
+tiers, qui voyait passer son adresse.
+
+### Ce que cela coûte, mesuré
+
+| | Fontes statiques | **Polices variables** |
+|---|---|---|
+| Fichiers | 18 | **10** |
+| Poids total | 737 Ko | **280 Ko** |
+| Réellement chargé sur l'accueil | — | **~110 Ko** |
+
+Inter et Archivo sont embarquées en **polices variables** : une seule fonte
+couvre toute la plage de graisse, là où il aurait fallu un fichier par graisse.
+IBM Plex Mono ne l'étant pas, ses trois instances sont prises telles quelles.
+
+Seuls `latin` et `latin-ext` sont embarqués. Le français a besoin des deux : le
+« œ » de « cœur » vit en U+0153, hors du latin de base. Le navigateur ne
+télécharge `latin-ext` que si la page contient un de ses caractères — c'est
+pourquoi l'accueil n'en charge que quatre sur dix.
+
+Deux fontes seulement sont **préchargées** : celles du premier écran. Toutes les
+précharger ferait concurrence au HTML lui-même.
+
+Les trois familles sont sous licence **SIL Open Font**, qui autorise
+explicitement cette redistribution. Leurs auteurs sont crédités sur `/credits`,
+comme les illustrations : citer n'est pas une politesse, c'est une condition de
+la licence.
+
+### Un piège rencontré
+
+Un téléchargement interrompu a laissé un fichier de **zéro octet** — celui
+d'Inter, le plus important. Rien ne l'a signalé : une déclaration `@font-face`
+qui pointe vers un fichier absent ou tronqué ne lève aucune erreur, le navigateur
+retombe silencieusement sur la police de repli.
+
+`InterfaceTest` vérifie désormais que chaque fonte déclarée existe, dépasse un
+kilo-octet et commence bien par la signature `wOF2`.
+
 ## Ce qui reste ouvert
 
-Les polices viennent de Google Fonts. Sur une connexion lente, elles arrivent
-après le texte — `display=swap` et des piles de repli réelles font que la page
-reste lisible pendant ce temps, mais les héberger avec l'application serait
-meilleur. Cela suppose de les servir depuis `public/`, ce qui est une demi-heure
-de travail et n'a pas été fait ici.
+Rien côté interface. Les limites qui subsistent sont contractuelles et non
+techniques : le paiement mobile suppose un contrat marchand avec l'opérateur, et
+l'envoi réel de SMS un contrat opérateur. Les deux mécanismes sont écrits et
+essayés ; seul le raccordement manque.

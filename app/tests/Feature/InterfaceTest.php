@@ -365,4 +365,79 @@ class InterfaceTest extends TestCase
                 "La page {$code} ne se rend pas hors contexte de requête.");
         }
     }
+
+    // ── Les ressources ───────────────────────────────────────────────────────
+
+    /**
+     * Aucune page ne dépend d'un serveur tiers.
+     *
+     * Les polices venaient de Google Fonts : une résolution DNS, une poignée de
+     * main TLS et un aller-retour avant que le premier caractère ne s'affiche
+     * dans sa vraie fonte — sur une connexion lente, cela se compte en
+     * secondes. Chaque visiteur déclenchait en outre une requête vers un
+     * serveur qui voyait passer son adresse.
+     *
+     * Elles sont désormais servies par l'application. Cet essai empêche de
+     * réintroduire la dépendance par distraction, en recopiant une balise
+     * trouvée ailleurs.
+     */
+    #[DataProvider('lesPages')]
+    public function test_aucune_page_ne_charge_de_ressource_externe(string $route, string $role): void
+    {
+        $html = $this->html($route, $role);
+
+        foreach (['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net',
+                  'cdnjs.cloudflare.com', 'unpkg.com'] as $hote) {
+            $this->assertStringNotContainsString(
+                $hote, $html,
+                "La page « {$route} » charge une ressource depuis « {$hote} » : "
+                . 'le site ne doit dépendre d\'aucun serveur tiers pour s\'afficher.'
+            );
+        }
+    }
+
+    /**
+     * Les fontes embarquées existent et sont valides.
+     *
+     * Une déclaration « @font-face » qui pointe vers un fichier absent ou
+     * tronqué ne lève aucune erreur : le navigateur retombe silencieusement sur
+     * la police de repli, et le site s'affiche simplement moins bien. C'est
+     * arrivé pendant la mise en place — un téléchargement interrompu avait
+     * laissé un fichier de zéro octet.
+     */
+    public function test_les_fontes_embarquees_sont_valides(): void
+    {
+        $css = file_get_contents(public_path('css/polices.css'));
+
+        preg_match_all("#url\('/(fonts/[^']+\.woff2)'\)#", $css, $trouvees);
+
+        $this->assertNotEmpty($trouvees[1], 'Aucune fonte déclarée.');
+
+        foreach ($trouvees[1] as $relatif) {
+            $chemin = public_path($relatif);
+
+            $this->assertFileExists($chemin, "La fonte « {$relatif} » est déclarée mais absente.");
+            $this->assertGreaterThan(1024, filesize($chemin),
+                "La fonte « {$relatif} » fait moins d'un kilo-octet : téléchargement tronqué.");
+            $this->assertSame('wOF2', file_get_contents($chemin, false, null, 0, 4),
+                "La fonte « {$relatif} » n'est pas un fichier WOFF2 valide.");
+        }
+    }
+
+    /** Les deux fontes du premier écran sont préchargées, les autres non. */
+    public function test_seules_les_fontes_du_premier_ecran_sont_prechargees(): void
+    {
+        $html = $this->get(route('accueil'))->assertOk()->getContent();
+
+        preg_match_all('/<link[^>]+rel="preload"[^>]*>/i', $html, $preloads);
+
+        $this->assertCount(2, $preloads[0],
+            'Précharger toutes les fontes ferait concurrence au HTML lui-même : '
+            . 'seules celles du premier écran le méritent.');
+
+        foreach ($preloads[0] as $balise) {
+            $this->assertStringContainsString('crossorigin', $balise,
+                'Une fonte préchargée sans « crossorigin » est téléchargée deux fois.');
+        }
+    }
 }
