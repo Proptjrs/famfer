@@ -46,6 +46,15 @@ fi
 
 # Le lien qui rend « storage/app/public » servable par nginx. Sans lui, les
 # photos téléversées existent sur le disque et ne s'affichent nulle part.
+# Les visuels du catalogue, reposes a chaque demarrage.
+#
+# Le semeur ne suffit pas : il s'arrete net quand le catalogue existe deja, et
+# le disque d'un conteneur ne survit pas a un redeploiement. La base garderait
+# ses lignes « photos_produit » pendant que les fichiers auraient disparu, et
+# chaque fiche afficherait un cadre vide -- sans la moindre erreur, puisqu'une
+# image manquante ne leve rien.
+php artisan famfer:visuels
+
 php artisan storage:link --force
 
 # Ces caches se reconstruisent à chaque déploiement, jamais à la main : un cache

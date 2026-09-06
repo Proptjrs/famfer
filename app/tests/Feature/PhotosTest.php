@@ -79,14 +79,27 @@ class PhotosTest extends TestCase
         Storage::disk('public')->assertMissing($chemin);
     }
 
+    /**
+     * Supprimer un produit emporte ses photos, et rien que les siennes.
+     *
+     * Le compte etait ici global, ce qui supposait un catalogue sans aucune
+     * photo. Depuis que le semis en pose sur les articles illustres, cette
+     * hypothese est fausse — et un essai qui repose sur une hypothese
+     * silencieuse casse le jour ou elle change, sans rien dire du defaut qu'il
+     * etait cense surveiller. Il compte desormais les photos de ce produit.
+     */
     public function test_supprimer_le_produit_emporte_ses_photos(): void
     {
+        $ailleurs = PhotoProduit::where('produit_id', '!=', $this->produit->id)->count();
+
         app(Photos::class)->ajouter($this->produit, $this->image());
-        $this->assertSame(1, PhotoProduit::count());
+        $this->assertSame(1, $this->produit->photos()->count());
 
         $this->produit->delete();
 
-        $this->assertSame(0, PhotoProduit::count());
+        $this->assertSame(0, PhotoProduit::where('produit_id', $this->produit->id)->count());
+        $this->assertSame($ailleurs, PhotoProduit::count(),
+            'La suppression a emporte les photos d\'autres produits.');
     }
 
     // ── Ce qui est refusé ────────────────────────────────────────────────────
@@ -237,5 +250,43 @@ class PhotosTest extends TestCase
 
         $this->get(route('produit', $this->produit))->assertOk()
             ->assertSee('<svg', false);
+    }
+
+    /**
+     * Les essais n'ecrivent jamais sur le disque de developpement.
+     *
+     * « phpunit.xml » redirige la base de donnees et la messagerie, mais pas le
+     * systeme de fichiers. Tant qu'aucun semis ne posait d'image, personne ne
+     * s'en apercevait. Le jour ou le semeur s'est mis a poser cent vingt-deux
+     * photos, chaque classe d'essai en a depose autant dans le vrai
+     * « storage/app/public » : plus de quarante mille fichiers orphelins et
+     * trois cent vingt-six megaoctets en une heure — sans la moindre erreur,
+     * puisque tout fonctionnait exactement comme demande.
+     *
+     * « Storage::fake » est pose dans « Tests\TestCase ». Cet essai verifie
+     * qu'il y reste : c'est le genre de garde-fou qu'on retire par distraction
+     * en refactorant la classe de base.
+     */
+    public function test_le_disque_public_est_isole_pendant_les_essais(): void
+    {
+        // Laravel compose ce chemin avec les deux separateurs melanges sous
+        // Windows : « storage/framework/testing » y arrive en
+        // « storage/framework/testing » avec une barre inverse au milieu. On
+        // normalise plutot que de tester une des deux formes.
+        $racine = str_replace('\\', '/', Storage::disk('public')->path(''));
+
+        $this->assertStringContainsString(
+            'framework/testing', $racine,
+            "Le disque public des essais pointe sur « {$racine} », c'est-a-dire "
+            . 'sur le stockage reel. Chaque semis y laissera ses fichiers, et '
+            . 'personne ne le verra avant que le disque soit plein.'
+        );
+
+        Storage::disk('public')->put('sonde.txt', 'x');
+
+        $this->assertFileDoesNotExist(
+            storage_path('app/public/sonde.txt'),
+            'Un fichier ecrit pendant un essai est arrive dans le stockage reel.'
+        );
     }
 }

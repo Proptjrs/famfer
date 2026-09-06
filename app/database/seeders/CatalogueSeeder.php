@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Boutique;
 use App\Models\Categorie;
 use App\Models\Produit;
+use App\Services\Visuels;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -217,6 +218,8 @@ class CatalogueSeeder extends Seeder
         foreach (array_chunk($lignes, 500) as $paquet) {
             DB::table('produits')->insert($paquet);
         }
+
+        $this->call(PhotosSeeder::class);
 
         return $poses;
     }

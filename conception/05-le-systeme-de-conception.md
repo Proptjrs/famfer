@@ -170,6 +170,69 @@ retombe silencieusement sur la police de repli.
 `InterfaceTest` vérifie désormais que chaque fonte déclarée existe, dépasse un
 kilo-octet et commence bien par la signature `wOF2`.
 
+## Les photos de produit
+
+Les visuels fournis étaient des rognages de pages d'un catalogue fournisseur :
+chacun portait une barre bleue de titre, un numéro de rayon et une légende
+incrustés dans les pixels.
+
+### Ce que la mesure a éliminé
+
+Cinq archives fusionnées et dédoublonnées donnent **767 visuels uniques**. Le
+tri est sans appel :
+
+| | |
+|---|---|
+| Sous 200 px | **665** — le service `Photos` les refuse depuis toujours |
+| Légende inseparable du produit | 6 |
+| **Exploitables** | **96** |
+| Correspondant à un produit du catalogue | **37** |
+
+Un fil de fer fait 117 × 68 px. Sur une carte de 196 px, c'est une bouillie — et
+le recadrage ne récupère rien, ces images étant déjà des rognages serrés.
+
+### Le nettoyage
+
+Trois passes : la barre bleue se reconnaît à sa dominante, la légende est un
+**bloc** d'encre entouré de blanc, puis les marges uniformes tombent. En boucle,
+car un seul passage laissait la légende quand le rognage commençait déjà sous la
+barre — vingt-quatre images sur cent deux étaient dans ce cas.
+
+Le détail qui a coûté le plus de temps : la première version cherchait la
+légende **ligne à ligne** et tombait sur le lisere anticrénelé de la barre, large
+d'une seule ligne. La vraie légende survivait alors en fantôme au-dessus du
+produit.
+
+Le script se vérifie lui-même : il rejette toute image qui porte encore une bande
+de texte après traitement. Six ont été écartées ainsi, plutôt que de sur-ajuster
+la règle au risque de couper de vrais articles.
+
+Le PNG passe en **WebP** : 13 Mo deviennent 0,4 Mo, sans différence visible.
+
+### Le défaut que cela a révélé
+
+`PhotosSeeder` pose les fichiers sur le disque public. `phpunit.xml` redirige la
+base de données et la messagerie — **pas le système de fichiers**.
+
+Tant qu'aucun semis ne posait d'image, personne ne s'en apercevait. Dès que le
+semeur s'est mis à poser cent vingt-deux photos, chaque classe d'essai en a
+déposé autant dans le vrai `storage/app/public` : **40 818 fichiers orphelins et
+326 Mo en une heure**, sans la moindre erreur puisque tout fonctionnait
+exactement comme demandé.
+
+`Storage::fake('public')` est désormais dans `Tests\TestCase`, et un essai
+vérifie qu'il y reste — c'est le genre de garde-fou qu'on retire par distraction
+en refactorant la classe de base.
+
+### La provenance
+
+Ces visuels viennent d'un catalogue commercial : la perceuse du rayon 14 est une
+photographie marketing de fabricant. Les 55 illustrations de sous-rayon, elles,
+sont sous licence libre avec attribution enregistrée sur `/credits`.
+
+C'est une distinction à connaître avant une mise en ligne publique : redistribuer
+la photographie d'un tiers sans autorisation écrite engage celui qui publie.
+
 ## Ce qui reste ouvert
 
 Rien côté interface. Les limites qui subsistent sont contractuelles et non

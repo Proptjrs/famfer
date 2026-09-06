@@ -8,6 +8,9 @@ use App\Models\Produit;
 use App\Services\Catalogue;
 use Database\Seeders\CatalogueSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\PhotoProduit;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -225,5 +228,74 @@ class CatalogueTest extends TestCase
     {
         return collect($this->catalogue()->chercher(['q' => $p->nom], 100)->items())
             ->contains('id', $p->id);
+    }
+
+    // ── Les visuels de produit ───────────────────────────────────────────────
+
+    /**
+     * Les visuels fournis sont bien attachés aux produits qu'ils illustrent.
+     *
+     * Le rapprochement se fait par le nom du fichier, normalisé comme le nom du
+     * produit : il n'y a pas de table de correspondance à maintenir, mais rien
+     * n'avertit non plus quand elle se rompt. Un fichier renommé, un produit
+     * rebaptisé, et l'image disparaît sans erreur — le repli à trois étages
+     * masque la panne au lieu de la signaler.
+     */
+    public function test_les_visuels_fournis_sont_attaches(): void
+    {
+        $fichiers = glob(database_path('seeders/donnees/photos/*.webp'));
+
+        if (! $fichiers) {
+            $this->markTestSkipped('Aucun visuel livré avec le catalogue.');
+        }
+
+        $this->assertGreaterThan(0, PhotoProduit::count(),
+            'Des visuels sont livrés mais aucun n\'est attaché : le rapprochement '
+            . 'par nom de fichier est rompu.');
+
+        // Chaque fichier livré doit trouver au moins un produit.
+        $orphelins = [];
+        foreach ($fichiers as $f) {
+            $cle = basename($f, '.webp');
+            if (! Produit::where('nom', 'ilike', '%')->get()
+                    ->contains(fn ($p) => Str::slug($p->nom) === $cle)) {
+                $orphelins[] = $cle;
+            }
+        }
+
+        $this->assertEmpty($orphelins,
+            'Ces visuels ne correspondent à aucun produit : ' . implode(', ', $orphelins));
+    }
+
+    /** Le fichier existe réellement là où l'enregistrement le désigne. */
+    public function test_chaque_photo_pointe_sur_un_fichier_present(): void
+    {
+        if (PhotoProduit::count() === 0) {
+            $this->markTestSkipped('Aucune photo posée.');
+        }
+
+        foreach (PhotoProduit::limit(20)->get() as $photo) {
+            $this->assertTrue(
+                Storage::disk('public')->exists($photo->chemin),
+                "La photo « {$photo->chemin} » est enregistrée mais absente du disque : "
+                . 'la fiche afficherait un cadre vide.'
+            );
+        }
+    }
+
+    /**
+     * Le même article vendu par deux boutiques a sa propre copie du fichier.
+     *
+     * Un fichier partagé entre deux fiches se supprimerait avec la première, et
+     * la seconde afficherait un cadre vide — « PhotoProduit » efface le fichier
+     * avec l'enregistrement.
+     */
+    public function test_deux_boutiques_ne_partagent_pas_le_meme_fichier(): void
+    {
+        $doublons = PhotoProduit::select('chemin')
+            ->groupBy('chemin')->havingRaw('count(*) > 1')->pluck('chemin');
+
+        $this->assertEmpty($doublons->all(),
+            'Ces fichiers sont partagés par plusieurs fiches : ' . $doublons->implode(', '));
     }
 }
